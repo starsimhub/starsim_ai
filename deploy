@@ -1,0 +1,63 @@
+#!/usr/bin/env python
+"""
+Creates the databases and runs the server for Starsim AI.
+"""
+
+import subprocess
+from dataclasses import dataclass
+import os
+import time
+
+@dataclass
+class Repo:
+    name: str
+    port: int
+    url: str
+
+repos = [
+    Repo('starsim', 8001, 'https://github.com/starsimhub/starsim'),
+    Repo('sciris', 8002, 'https://github.com/sciris/sciris'),
+]
+
+def run(command, wait=True, log_file=None):
+    print(f'Running: {command}')
+    if log_file:
+        with open(log_file, 'a') as f:
+            process = subprocess.Popen(command, shell=True, stdout=f, stderr=subprocess.STDOUT, executable='/usr/local/bin/ibash')
+    else:
+        process = subprocess.Popen(command, shell=True, executable='/usr/local/bin/ibash')
+    
+    if wait:
+        process.wait()
+        print(f"Command finished with code {process.returncode}")
+    else:
+        print(f"Started background process with PID {process.pid}")
+        return process.pid
+
+if __name__ == '__main__':
+    # Create the databases
+    for repo in repos:
+        print(f'Creating database for {repo.name}')
+        cmd = f'uv run python -m mcp_pack.create_db {repo.url} --verbose --include-notebooks --include-rst'
+        run(cmd, wait=True)
+
+    # Run the servers
+    pids = {}
+    for repo in repos:
+        print(f'Starting server for {repo.name}')
+        log_file = f'{repo.name}.log'
+        cmd = f'uv run python -m mcp_pack.server --module_name={repo.name} --port={repo.port} --transport=sse'
+        pid = run(cmd, wait=False, log_file=log_file)
+        pids[repo.name] = pid
+
+    # Save PIDs to file
+    with open('server_pids.txt', 'w') as f:
+        for name, pid in pids.items():
+            f.write(f'{name}:{pid}\n')
+    
+    print("Servers started! To check logs, use e.g.:")
+    for repo in repos:
+        print(f'  tail -f {repo.name}.log')
+
+    print("To check if the servers are still running, use:")
+    print("  ps -p", " ".join(str(pid) for pid in pids.values()))
