@@ -34,7 +34,9 @@ def run(command, wait=True, log_file=None):
         print(f"Started background process with PID {process.pid}")
         return process.pid
 
+
 if __name__ == '__main__':
+
     # Create the databases
     for repo in repos:
         print(f'Creating database for {repo.name}')
