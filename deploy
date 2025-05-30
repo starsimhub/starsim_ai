@@ -3,10 +3,9 @@
 Creates the databases and runs the server for Starsim AI.
 """
 
+import os
 import subprocess
 from dataclasses import dataclass
-import os
-import time
 
 @dataclass
 class Repo:
@@ -21,11 +20,12 @@ repos = [
 
 def run(command, wait=True, log_file=None):
     print(f'Running: {command}')
+    cmd_list = ['/bin/bash', '-ic', command] # Runs interactively and executes a command
     if log_file:
         with open(log_file, 'a') as f:
-            process = subprocess.Popen(command, shell=True, stdout=f, stderr=subprocess.STDOUT, executable='/usr/local/bin/ibash')
+            process = subprocess.Popen(cmd_list, stdout=f, stderr=subprocess.STDOUT)
     else:
-        process = subprocess.Popen(command, shell=True, executable='/usr/local/bin/ibash')
+        process = subprocess.Popen(cmd_list)
     
     if wait:
         process.wait()
