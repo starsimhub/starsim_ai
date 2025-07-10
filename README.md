@@ -4,17 +4,17 @@ Starsim-aware AI agents, built on [mcp_pack](https://github.com/krosenfeld-IDM/m
 
 ## Usage
 
-Copy the following into `settings.json`, or into `mcp.json` for VS Code, Cursor, etc.:
+Copy the following into `settings.json`, or into `mcp.json` for VS Code, Cursor, Claude, etc.:
 ```
     "mcp": {
         "servers": {
             "starsim": {
                 "type": "sse",
-                "url": "http://52.247.224.106:8001"
+                "url": "http://mcp.starsim.org:8001"
             },
             "sciris": {
                 "type": "sse",
-                "url": "http://52.247.224.106:8002"
+                "url": "http://mcp.starsim.org:8002"
             }
         }
     }
