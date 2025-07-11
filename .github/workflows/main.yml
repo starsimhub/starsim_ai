@@ -18,9 +18,10 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
 
       - name: Redeploy with ssh
-         ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} bash -c "'
-          echo Hello from Starsim
-          cd /home/starsim/mcp-pack
-          git fetch
-          git pull
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} bash -c "'
+            echo Hello from Starsim
+            cd /home/starsim/mcp-pack
+            git fetch
+            git pull
           '"
