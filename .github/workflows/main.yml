@@ -1,0 +1,26 @@
+name: SSH Deploy or Command
+
+on:
+  push:
+    branches: [test]
+  workflow_dispatch:  # Enables manual triggering  
+jobs:
+  remote-ssh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Redeploy with ssh
+         ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} bash -c "'
+          echo Hello from Starsim
+          cd /home/starsim/mcp-pack
+          git fetch
+          git pull
+          '"
