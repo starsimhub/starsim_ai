@@ -30,8 +30,14 @@ jobs:
             git fetch
             git checkout ${{ github.event.inputs.branch || 'main' }}
             git pull
-            kill -9 $(lsof -ti :8001)
-            kill -9 $(lsof -ti :8002)
+            pid1=$(lsof -ti :8001)
+            if [ -n "$pid1" ]; then
+              kill -9 $pid1
+            fi
+            pid2=$(lsof -ti :8002)
+            if [ -n "$pid2" ]; then
+              kill -9 $pid2
+            fi
             sleep 3
             nohup uv run python -m mcp_pack.server --module_name=sciris --port=8001 --transport=sse > sciris.log 2>&1 &
             nohup uv run python -m mcp_pack.server --module_name=starsim --port=8002 --transport=sse > starsim.log 2>&1 &
