@@ -30,14 +30,18 @@ jobs:
             git fetch
             git checkout ${{ github.event.inputs.branch || 'main' }}
             git pull
+            set -x
             pid1=$(lsof -ti :8001)
+            echo "PID for port 8001: $pid1"
             if [ -n "$pid1" ]; then
-              kill -9 $pid1
+              kill -9 $pid1 || echo "Failed to kill PID $pid1 for port 8001"
             fi
             pid2=$(lsof -ti :8002)
+            echo "PID for port 8002: $pid2"
             if [ -n "$pid2" ]; then
-              kill -9 $pid2
+              kill -9 $pid2 || echo "Failed to kill PID $pid2 for port 8002"
             fi
+            set +x
             sleep 3
             nohup uv run python -m mcp_pack.server --module_name=sciris --port=8001 --transport=sse > sciris.log 2>&1 &
             nohup uv run python -m mcp_pack.server --module_name=starsim --port=8002 --transport=sse > starsim.log 2>&1 &
