@@ -1,0 +1,71 @@
+name: SSH Deploy or Command
+
+on:
+  push:
+    branches: [test]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy from mcp-pack'
+        required: true
+        default: 'main'
+        type: string
+jobs:
+  remote-ssh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Set up SSH Agent
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Redeploy with ssh
+        env: 
+          DEPLOY_BRANCH: ${{ github.event.inputs.branch && github.event.inputs.branch || 'main' }}
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} '
+            echo Hello from Starsim
+            cd /home/starsim/mcp-pack
+            git fetch
+            git checkout $DEPLOY_BRANCH
+            git pull
+            set -x
+
+            for port in 8001 8002; do
+              pid=$(lsof -tiTCP:$port -sTCP:LISTEN)
+              echo "PID for port $port: $pid"
+              if [ -n "$pid" ]; then
+                kill -9 $pid || echo "Failed to kill PID $pid for port $port"
+              else
+                echo "No process found on port $port."
+              fi
+            done
+
+            set +x
+            sleep 3
+
+            nohup uv run python -m mcp_pack.server --module_name=sciris --port=8001 --transport=sse > sciris.log 2>&1 &
+            nohup uv run python -m mcp_pack.server --module_name=starsim --port=8002 --transport=sse > starsim.log 2>&1 &
+
+            sleep 15
+            echo "--- sciris server logs ---"
+            cat sciris.log
+            echo "--- starsim server logs ---"
+            cat starsim.log
+            echo "Deployment complete"
+          '
+
+      - name: Check if both ports are running
+        run: |
+          for port in 8001 8002; do
+            if ! ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} lsof -ti :$port; then
+              echo "Port $port is not in use. Please investigate the deployment."
+              exit 1
+            else
+              echo "Port $port is in use."
+            fi
+          done
+        shell: bash
