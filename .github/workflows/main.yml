@@ -50,6 +50,7 @@ jobs:
             nohup uv run python -m mcp_pack.server --module_name=sciris --port=8001 --transport=sse > sciris.log 2>&1 &
             nohup uv run python -m mcp_pack.server --module_name=starsim --port=8002 --transport=sse > starsim.log 2>&1 &
 
+            sleep 15
             echo "--- sciris server logs ---"
             cat sciris.log
             echo "--- starsim server logs ---"
