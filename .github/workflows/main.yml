@@ -56,6 +56,7 @@ jobs:
         
             set +x
             sleep 3
+            export OPENAI_API_KEY=\$OPENAI_API_KEY
             uv run python -m mcp_pack.create_db https://github.com/sciris/sciris --verbose --include-notebooks --include-rst --github-token \$GITHUB_TOKEN --openai-api-key \$OPENAI_API_KEY 
             uv run python -m mcp_pack.create_db https://github.com/starsimhub/starsim --verbose --include-notebooks --include-rst --github-token \$GITHUB_TOKEN --openai-api-key \$OPENAI_API_KEY 
 
