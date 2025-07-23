@@ -31,20 +31,15 @@ jobs:
             git checkout ${{ github.event.inputs.branch || 'main' }}
             git pull
             set -x
-            pid1=$(lsof -ti :8001)
-            echo \"PID for port 8001: \$pid1\"
-            if [ -n \"$pid1\" ] && [ \"$pid1\" != \"\" ]; then
-              kill -9 $pid1 || echo \"Failed to kill PID $pid1 for port 8001\"
-            else
-              echo \"No process found on port 8001.\"
-            fi
-            pid2=$(lsof -ti :8002)
-            echo \"PID for port 8002: \$pid2\"
-            if [ -n \"$pid2\" ] && [ \"$pid2\" != \"\" ]; then
-              kill -9 $pid2 || echo \"Failed to kill PID $pid2 for port 8002\"
-            else
-              echo \"No process found on port 8002.\"
-            fi
+            for port in 8001 8002; do
+              pid=$(lsof -ti :$port)
+              echo \"PID for port $port: \$pid\"
+              if [ -n \"$pid\" ] && [ \"$pid\" != \"\" ]; then
+                kill -9 $pid || echo \"Failed to kill PID \$pid for port $port\"
+              else
+                echo \"No process found on port $port.\"
+              fi
+            done
             set +x
             sleep 3
             nohup uv run python -m mcp_pack.server --module_name=sciris --port=8001 --transport=sse > sciris.log 2>&1 &
