@@ -23,12 +23,14 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_KEY }}
 
       - name: Redeploy with ssh
+        env: 
+          DEPLOY_BRANCH: ${{ github.event.inputs.branch && github.event.inputs.branch || 'main' }}
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} '
             echo Hello from Starsim
             cd /home/starsim/mcp-pack
             git fetch
-            git checkout ${{ github.event.inputs.branch || "main" }}
+            git checkout $DEPLOY_BRANCH
             git pull
             set -x
 
