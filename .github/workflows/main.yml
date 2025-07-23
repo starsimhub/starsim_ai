@@ -24,26 +24,26 @@ jobs:
 
       - name: Redeploy with ssh
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} bash -c "'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} bash -c "
             echo Hello from Starsim
             cd /home/starsim/mcp-pack
             git fetch
             git checkout ${{ github.event.inputs.branch || 'main' }}
             git pull
             set -x
-            pid1=$(lsof -ti :8001 | xargs)
-            echo "PID for port 8001: '$pid1'"
-            if [ -n "$pid1" ] && [ "$pid1" != "" ]; then
-              kill -9 $pid1 || echo "Failed to kill PID $pid1 for port 8001"
+            pid1=$(lsof -ti :8001)
+            echo \"PID for port 8001: \$pid1\"
+            if [ -n \"$pid1\" ] && [ \"$pid1\" != \"\" ]; then
+              kill -9 $pid1 || echo \"Failed to kill PID $pid1 for port 8001\"
             else
-              echo "No process found on port 8001."
+              echo \"No process found on port 8001.\"
             fi
-            pid2=$(lsof -ti :8002 | xargs)
-            echo "PID for port 8002: '$pid2'"
-            if [ -n "$pid2" ] && [ "$pid2" != "" ]; then
-              kill -9 $pid2 || echo "Failed to kill PID $pid2 for port 8002"
+            pid2=$(lsof -ti :8002)
+            echo \"PID for port 8002: \$pid2\"
+            if [ -n \"$pid2\" ] && [ \"$pid2\" != \"\" ]; then
+              kill -9 $pid2 || echo \"Failed to kill PID $pid2 for port 8002\"
             else
-              echo "No process found on port 8002."
+              echo \"No process found on port 8002.\"
             fi
             set +x
             sleep 3
@@ -54,7 +54,7 @@ jobs:
             echo '--- starsim server logs ---'
             cat starsim.log
             echo 'Deployment complete'
-          '"
+          "
 
       - name: Check if both ports are running
         run: |
