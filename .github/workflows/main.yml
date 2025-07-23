@@ -33,6 +33,7 @@ jobs:
       - name: Redeploy with ssh
         run: |
           ssh -o StrictHostKeyChecking=no "${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}" "
+            DEPLOY_BRANCH=${{ env.DEPLOY_BRANCH }}
             echo Hello from Starsim
             cd /home/starsim/mcp-pack
             git fetch
