@@ -34,6 +34,8 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no "${{ secrets.VM_USER }}@${{ secrets.VM_HOST }}" "
             DEPLOY_BRANCH=${{ env.DEPLOY_BRANCH }}
+            GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+            OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
             echo Hello from Starsim
             cd /home/starsim/mcp-pack
             git fetch
@@ -54,7 +56,10 @@ jobs:
         
             set +x
             sleep 3
-        
+            uv run python -m mcp_pack.create_db https://github.com/sciris/sciris --verbose --include-notebooks --include-rst --github-token \$GITHUB_TOKEN --openai-api-key \$OPENAI_API_KEY 
+            uv run python -m mcp_pack.create_db https://github.com/starsimhub/starsim --verbose --include-notebooks --include-rst --github-token \$GITHUB_TOKEN --openai-api-key \$OPENAI_API_KEY 
+
+            sleep 5
             nohup uv run python -m mcp_pack.server --module_name=sciris --port=8001 --transport=sse > sciris.log 2>&1 &
             nohup uv run python -m mcp_pack.server --module_name=starsim --port=8002 --transport=sse > starsim.log 2>&1 &
         
