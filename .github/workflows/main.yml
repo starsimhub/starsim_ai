@@ -32,7 +32,7 @@ jobs:
           fi
       - name: Redeploy with ssh
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} '
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} "DEPLOY_BRANCH='$DEPLOY_BRANCH' bash -c '
             echo Hello from Starsim
             cd /home/starsim/mcp-pack
             git fetch
@@ -63,7 +63,7 @@ jobs:
             echo "--- starsim server logs ---"
             cat starsim.log
             echo "Deployment complete"
-          '
+          '"
 
       - name: Check if both ports are running
         run: |
