@@ -24,32 +24,36 @@ jobs:
 
       - name: Redeploy with ssh
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} bash -c "
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@${{ secrets.VM_HOST }} '
             echo Hello from Starsim
             cd /home/starsim/mcp-pack
             git fetch
-            git checkout ${{ github.event.inputs.branch || 'main' }}
+            git checkout ${{ github.event.inputs.branch || "main" }}
             git pull
             set -x
+
             for port in 8001 8002; do
-              pid=$(lsof -ti :$port)
-              echo \"PID for port $port: \$pid\"
-              if [ -n \"$pid\" ] && [ \"$pid\" != \"\" ]; then
-                kill -9 $pid || echo \"Failed to kill PID \$pid for port $port\"
+              pid=$(lsof -tiTCP:$port -sTCP:LISTEN)
+              echo "PID for port $port: $pid"
+              if [ -n "$pid" ]; then
+                kill -9 $pid || echo "Failed to kill PID $pid for port $port"
               else
-                echo \"No process found on port $port.\"
+                echo "No process found on port $port."
               fi
             done
+
             set +x
             sleep 3
+
             nohup uv run python -m mcp_pack.server --module_name=sciris --port=8001 --transport=sse > sciris.log 2>&1 &
             nohup uv run python -m mcp_pack.server --module_name=starsim --port=8002 --transport=sse > starsim.log 2>&1 &
-            echo '--- sciris server logs ---'
+
+            echo "--- sciris server logs ---"
             cat sciris.log
-            echo '--- starsim server logs ---'
+            echo "--- starsim server logs ---"
             cat starsim.log
-            echo 'Deployment complete'
-          "
+            echo "Deployment complete"
+          '
 
       - name: Check if both ports are running
         run: |
