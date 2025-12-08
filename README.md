@@ -22,6 +22,12 @@ Copy the following into `settings.json`, or into `mcp.json` for VS Code, Cursor,
 
 These agents should now be available to your IDE.
 
+To use these tools in Claude Code, you can also use the following commands:
+```
+claude mcp add --transport sse starsim http://mcp.starsim.org:8001/sse
+claude mcp add --transport sse sciris http://mcp.starsim.org:8002/sse
+```
+
 ## For developers
 
 Users shouldn't need to do this -- this is just for developers to start their own server.
