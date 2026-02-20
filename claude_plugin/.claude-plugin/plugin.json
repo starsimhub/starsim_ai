@@ -1,0 +1,11 @@
+{
+  "name": "starsim-ai",
+  "version": "0.1.0",
+  "description": "Starsim-aware AI skills and MCP tools for agent-based disease modeling",
+  "author": {
+    "name": "StarsimHub"
+  },
+  "repository": "https://github.com/starsimhub/starsim_ai",
+  "license": "MIT",
+  "keywords": ["starsim", "sciris", "disease-modeling", "epidemiology"]
+}
