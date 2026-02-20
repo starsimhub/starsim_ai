@@ -1,12 +1,11 @@
 ---
 name: sciris-utilities
 description: Use when the user is working with Sciris utilities — including file I/O, date handling, parallelization, profiling, plotting helpers, or data structures like odict and dataframe.
-version: 0.1.0
 ---
 
 # Sciris Utilities
 
-You are helping the user work with [Sciris](https://github.com/sciris/sciris), a library of utility functions commonly used alongside Starsim and other scientific Python projects. These instructions were written for Sciris version 3.2.7 (2026-02-19).
+You are helping the user work with [Sciris](https://github.com/sciris/sciris), a library of utility functions commonly used alongside Starsim and other scientific Python projects. These instructions were written for Sciris version 3.2.7 on 2026-02-19.
 
 ## When to activate
 
