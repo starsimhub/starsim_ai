@@ -7,6 +7,12 @@ Starsim-aware AI agents, skills, and tools.
 
 Instructions coming soon!
 
+## Context7
+
+Starsim is available on Context7:
+
+https://context7.com/starsimhub/starsim
+
 
 ## Manual MCP usage
 
