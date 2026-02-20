@@ -10,25 +10,21 @@ A Claude Code plugin that provides Starsim and Sciris MCP tools and modeling ski
 
 ## Installation
 
-### Option 1: Add from local path
+Inside Claude Code, add this repo as a local marketplace, then install the plugin:
 
-```bash
-claude plugin add /path/to/starsim_ai/claude_plugin
-```
+1. **Add the marketplace** (run inside Claude Code):
+   ```
+   /plugin marketplace add /path/to/starsim_ai/claude_plugin
+   ```
 
-### Option 2: Add from GitHub
+2. **Install the plugin** (run inside Claude Code):
+   ```
+   /plugin install starsim-ai
+   ```
 
-```bash
-claude plugin add https://github.com/starsimhub/starsim_ai --path claude_plugin
-```
+   Or use the interactive UI — run `/plugin`, go to the **Discover** tab, and install from there.
 
-### Verify installation
-
-```bash
-claude /mcp
-```
-
-You should see `starsim` and `sciris` MCP servers listed.
+3. **Verify** — run `/mcp` to confirm the `starsim` and `sciris` MCP servers are listed.
 
 ## Plugin structure
 
