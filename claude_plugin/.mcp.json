@@ -1,12 +1,8 @@
 {
   "mcpServers": {
-    "starsim": {
-      "type": "sse",
-      "url": "http://mcp.starsim.org:8001/sse"
-    },
-    "sciris": {
-      "type": "sse",
-      "url": "http://mcp.starsim.org:8002/sse"
+    "context7": {
+      "type": "http",
+      "url": "https://mcp.context7.com/mcp"
     }
   }
 }
