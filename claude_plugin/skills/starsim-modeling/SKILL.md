@@ -6,7 +6,7 @@ version: 0.1.0
 
 # Starsim Modeling
 
-You are helping the user build agent-based disease models with [Starsim](https://github.com/starsimhub/starsim).
+You are helping the user build agent-based disease models with [Starsim](https://github.com/starsimhub/starsim). These instructions were written for Starsim version 3.1.1 (2026-02-19).
 
 ## When to activate
 
