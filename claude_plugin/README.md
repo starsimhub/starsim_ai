@@ -31,7 +31,8 @@ Inside Claude Code, add this repo as a local marketplace, then install the plugi
 ```
 claude_plugin/
 ├── .claude-plugin/
-│   └── plugin.json          # Plugin manifest
+│   ├── plugin.json          # Plugin manifest
+│   └── marketplace.json     # Marketplace catalog
 ├── .mcp.json                # MCP server definitions (starsim + sciris)
 ├── skills/
 │   ├── starsim-modeling/
