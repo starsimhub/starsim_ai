@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "starsim": {
+      "type": "sse",
+      "url": "http://mcp.starsim.org:8001/sse"
+    },
+    "sciris": {
+      "type": "sse",
+      "url": "http://mcp.starsim.org:8002/sse"
+    }
+  }
+}
