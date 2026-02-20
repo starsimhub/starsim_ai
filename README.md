@@ -9,7 +9,7 @@ Instructions coming soon!
 
 ## Context7
 
-Starsim is available on Context7:
+Starsim is available on [Context7](https://context7.com):
 
 https://context7.com/starsimhub/starsim
 
