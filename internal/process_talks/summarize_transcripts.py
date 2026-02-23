@@ -5,7 +5,6 @@ Each transcript gets its own Claude agent that reads and summarizes it concurren
 """
 
 import asyncio
-import os
 from pathlib import Path
 
 import sciris as sc
@@ -62,7 +61,7 @@ async def summarize_all(
     max_concurrent: int = 5,
 ) -> list[dict]:
     """Discover transcripts, summarize in parallel, write markdown files."""
-    os.makedirs(output_dir, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
 
     # Discover and read all transcripts
     transcript_files = sorted(transcript_dir.glob("*.txt"))
@@ -71,15 +70,23 @@ async def summarize_all(
     semaphore = asyncio.Semaphore(max_concurrent)
 
     async def process_one(path: Path) -> dict:
+        # Reverse sc.sanitizefilename: underscores->spaces, double-space->colon-space
         title = path.stem.replace("_", " ").replace("  ", ": ")
-        content = path.read_text()
 
         async with semaphore:
+            content = path.read_text()
             sc.printgreen(f"Starting: {path.name}")
-            result = await summarize_transcript(title, content)
-            print(f"Finished: {path.name}")
+            try:
+                result = await summarize_transcript(title, content)
+            except Exception as e:
+                print(f"FAILED: {path.name}: {e}")
+                return {"file": path.name, "output": None}
 
-        # Write output
+        if result is None:
+            print(f"WARNING: No result for {path.name}")
+            return {"file": path.name, "output": None}
+
+        print(f"Finished: {path.name}")
         out_path = output_dir / f"{path.stem}.md"
         out_path.write_text(result)
         return {"file": path.name, "output": str(out_path)}
@@ -96,10 +103,15 @@ async def main():
 
     results = await summarize_all(transcript_dir, output_dir)
 
+    succeeded = [r for r in results if r["output"]]
+    failed = [r for r in results if not r["output"]]
+
     print(f"\n{'='*60}")
-    print(f"Summarized {len(results)} transcripts")
-    for r in results:
+    print(f"Summarized {len(succeeded)}/{len(results)} transcripts")
+    for r in succeeded:
         print(f"  {r['file']} -> {r['output']}")
+    for r in failed:
+        print(f"  {r['file']} -> FAILED")
 
     T.toc()
 
