@@ -1,7 +1,7 @@
 """
-Parallel transcript summarization using the Claude Agent SDK.
+Parallel summary summarization using the Claude Agent SDK.
 
-Each transcript gets its own Claude agent that reads and summarizes it concurrently.
+Like summarize_transcripts.py, but summarize the summaries into Claude skills.
 """
 
 import asyncio
@@ -57,7 +57,7 @@ async def summarize_transcript(title, content):
 
 
 async def summarize_all(transcript_dir, output_dir, max_concurrent=10):
-    """Discover transcripts, summarize in parallel, write markdown files."""
+    """Discover summaries, write skills in parallel """
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Discover and read all transcripts
@@ -94,17 +94,17 @@ async def summarize_all(transcript_dir, output_dir, max_concurrent=10):
 
 async def main():
     T = sc.timer()
-    base = sc.thispath()
-    transcript_dir = base / "harvard" / "transcripts"
-    output_dir = base / "harvard" / "summaries"
+    base = sc.thispath() / "harvard"
+    summaries_dir = base / "summaries"
+    output_dir = base / "harvard" / "skills"
 
-    results = await summarize_all(transcript_dir, output_dir)
+    results = await summarize_all(summaries_dir, output_dir)
 
     succeeded = [r for r in results if r["output"]]
     failed = [r for r in results if not r["output"]]
 
     print(f"\n{'='*60}")
-    print(f"Summarized {len(succeeded)}/{len(results)} transcripts")
+    print(f"Built {len(succeeded)}/{len(results)} skills")
     for r in succeeded:
         print(f"  {r['file']} -> {r['output']}")
     for r in failed:
