@@ -2,7 +2,7 @@
 
 Seven skills covering foundational disease modeling topics:
 
-- **introduction/** — Disease burden, demography, transmission routes, compartmental model basics
+- **basic_epi_modeling/** — Disease burden, demography, transmission routes, compartmental model basics
 - **sir-models/** — SIR equations, R0, effective reproduction number, interventions
 - **sir-elaborations/** — SEIR/MSIR/SIRS extensions, age structure, contact heterogeneity, R0 estimation
 - **vaccination/** — Herd immunity thresholds, vaccination strategies, vaccine failure modes, eradicability

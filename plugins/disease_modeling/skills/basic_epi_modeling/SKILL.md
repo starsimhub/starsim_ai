@@ -1,5 +1,5 @@
 ---
-name: introduction
+name: basic_epi_modeling
 description: This skill should be used when the user asks about "disease burden", "DALYs", "population at risk", "transmission routes", "epidemic vs endemic", "compartmental model basics", "SI SIS SIR model selection", "incidence vs prevalence", "WAIFW matrix", or needs foundational guidance on setting up a new infectious disease model from scratch.
 ---
 
