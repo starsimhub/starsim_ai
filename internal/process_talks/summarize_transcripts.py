@@ -6,7 +6,7 @@ Each transcript gets its own Claude agent that reads and summarizes it concurren
 
 import asyncio
 import sciris as sc
-import claude_agent_sd as claude
+import claude_agent_sdk as claude
 
 PROMPT_TEMPLATE = """\
 Summarize this lecture transcript into a structured markdown document \
