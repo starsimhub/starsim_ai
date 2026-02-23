@@ -5,10 +5,8 @@ Each transcript gets its own Claude agent that reads and summarizes it concurren
 """
 
 import asyncio
-from pathlib import Path
-
 import sciris as sc
-from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
+import claude_agent_sd as claude
 
 PROMPT_TEMPLATE = """\
 Summarize this lecture transcript into a structured markdown document \
@@ -20,16 +18,19 @@ focused on disease modeling skills. Use this exact format:
 1-2 sentence summary of the lecture's main topic.
 
 ## Key Concepts
-- Bulleted list of the main ideas covered
+- Very brief, bulleted list of the main ideas covered
 
 ## Modeling Skills
-- Specific techniques, methods, or modeling approaches taught \
-that a disease modeler could apply
+- Summarize the specific techniques, methods, or modeling approaches taught \
+that a disease modeler could apply. Explain the actual skill rather than \
+referencing it. For example, instead of "Reading and interpreting epidemic curves" \
+say "Use epidemic curves to count cases and determine the type of epidemic  \
+(outbreak: rapidly rising cases; endemic: steady)".
 
 ## Key Terms
 Comma-separated list of important technical terms
 
-Aim for roughly 100-500 words, but this is a guideline — let the \
+Aim for roughly 200-800 words, but this is a guideline — let the \
 content dictate the length. Shorter or longer is fine as long as \
 the summary is substantive and complete.
 
@@ -38,28 +39,24 @@ TRANSCRIPT:
 {content}"""
 
 
-async def summarize_transcript(title: str, content: str) -> str:
+async def summarize_transcript(title, content):
     """Spawn a Claude agent to summarize a single transcript."""
     result_text = None
 
-    async for message in query(
+    async for message in claude.query(
         prompt=PROMPT_TEMPLATE.format(title=title, content=content),
-        options=ClaudeAgentOptions(
+        options=claude.ClaudeAgentOptions(
             allowed_tools=[],
             max_turns=1,
         ),
     ):
-        if isinstance(message, ResultMessage):
+        if isinstance(message, claude.ResultMessage):
             result_text = message.result
 
     return result_text
 
 
-async def summarize_all(
-    transcript_dir: Path,
-    output_dir: Path,
-    max_concurrent: int = 5,
-) -> list[dict]:
+async def summarize_all(transcript_dir, output_dir, max_concurrent=10):
     """Discover transcripts, summarize in parallel, write markdown files."""
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -69,7 +66,7 @@ async def summarize_all(
 
     semaphore = asyncio.Semaphore(max_concurrent)
 
-    async def process_one(path: Path) -> dict:
+    async def process_one(path):
         # Reverse sc.sanitizefilename: underscores->spaces, double-space->colon-space
         title = path.stem.replace("_", " ").replace("  ", ": ")
 
