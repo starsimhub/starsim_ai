@@ -3,18 +3,37 @@
 Starsim-aware AI agents, skills, and tools.
 
 
-## Claude/Cursor plugin
+## Claude Code Plugins
 
-Instructions coming soon!
+This repo contains two Claude Code plugins, installable via the built-in marketplace:
 
-## Context7
+- **starsim-ai** (`plugins/starsim/`) — Starsim and Sciris MCP tools and modeling skills
+- **disease-modeling** (`plugins/disease_modeling/`) — General disease modeling skills and tools (WIP)
+
+To install, add this repo as a marketplace inside Claude Code:
+
+```
+/plugin marketplace add /path/to/starsim_ai
+```
+
+Then install either plugin from the **Discover** tab (`/plugin`).
+
+## MCP servers
+
+### Automatic MCP servers
 
 Starsim is available on [Context7](https://context7.com):
 
 https://context7.com/starsimhub/starsim
 
+It is also available on [GitMCP](https://gitmcp.io):
 
-## Manual MCP usage
+https://gitmcp.io/starsimhub/starsim
+
+
+### Manual MCP usage
+
+*Note: manual MCP servers may not be up to date; GitMCP or Context7 is recommended.*
 
 Built on [mcp_pack](https://github.com/krosenfeld-IDM/mcp-pack).
 
@@ -41,3 +60,9 @@ To use these tools in Claude Code, you can also use the following commands:
 claude mcp add --transport sse starsim http://mcp.starsim.org:8001/sse
 claude mcp add --transport sse sciris http://mcp.starsim.org:8002/sse
 ```
+
+## Repo structure
+
+- `deploy_mcp_pack`: Scripts for manually deploying the Starsim MCP server
+- `internal`: Scripts used for creating the AI tools (not for the user)
+- `plugins`: Claude Code skills and plugins

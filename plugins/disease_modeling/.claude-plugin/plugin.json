@@ -1,0 +1,11 @@
+{
+  "name": "disease-modeling",
+  "version": "0.1.0",
+  "description": "General disease modeling skills and tools",
+  "author": {
+    "name": "StarsimHub"
+  },
+  "repository": "https://github.com/starsimhub/starsim_ai",
+  "license": "MIT",
+  "keywords": ["disease-modeling", "epidemiology", "compartmental-models"]
+}

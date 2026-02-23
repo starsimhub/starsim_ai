@@ -1,4 +1,4 @@
-# Claude Starsim Plugin
+# Starsim Plugin
 
 A Claude Code plugin that provides Starsim and Sciris MCP tools and modeling skills.
 
@@ -10,11 +10,11 @@ A Claude Code plugin that provides Starsim and Sciris MCP tools and modeling ski
 
 ## Installation
 
-Inside Claude Code, add this repo as a local marketplace, then install the plugin:
+Inside Claude Code, add the starsim_ai repo as a local marketplace, then install the plugin:
 
 1. **Add the marketplace** (run inside Claude Code):
    ```
-   /plugin marketplace add /path/to/starsim_ai/claude_plugin
+   /plugin marketplace add /path/to/starsim_ai
    ```
 
 2. **Install the plugin** (run inside Claude Code):
@@ -29,15 +29,24 @@ Inside Claude Code, add this repo as a local marketplace, then install the plugi
 ## Plugin structure
 
 ```
-claude_plugin/
+plugins/starsim/
 ├── .claude-plugin/
-│   ├── plugin.json          # Plugin manifest
-│   └── marketplace.json     # Marketplace catalog
-├── .mcp.json                # MCP server definitions (starsim + sciris)
+│   └── plugin.json          # Plugin manifest
+├── .mcp.json                # MCP server definitions (context7)
 ├── skills/
 │   ├── starsim-modeling/
 │   │   └── SKILL.md         # Starsim simulation guidance
-│   └── sciris-utilities/
-│       └── SKILL.md         # Sciris utility guidance
+│   ├── sciris-utilities/
+│   │   └── SKILL.md         # Sciris utility guidance
+│   ├── starsim-style-docs/
+│   │   └── SKILL.md         # Documentation style
+│   ├── starsim-style-philosophy/
+│   │   └── SKILL.md         # Design philosophy
+│   ├── starsim-style-python/
+│   │   └── SKILL.md         # Python code style
+│   ├── starsim-style-tests/
+│   │   └── SKILL.md         # Testing conventions
+│   └── stisim-modeling/
+│       └── SKILL.md         # STI disease modeling
 └── README.md
 ```
