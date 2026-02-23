@@ -18,14 +18,20 @@ To install, add this repo as a marketplace inside Claude Code:
 
 Then install either plugin from the **Discover** tab (`/plugin`).
 
-## Context7
+## Automatic MCP servers
 
 Starsim is available on [Context7](https://context7.com):
 
 https://context7.com/starsimhub/starsim
 
+It is also available on [GitMCP](https://gitmcp.io):
+
+https://gitmcp.io/starsimhub/starsim
+
 
 ## Manual MCP usage
+
+*Note: manual MCP servers may not be up to date; GitMCP or Context7 is recommended.*
 
 Built on [mcp_pack](https://github.com/krosenfeld-IDM/mcp-pack).
 
@@ -52,3 +58,4 @@ To use these tools in Claude Code, you can also use the following commands:
 claude mcp add --transport sse starsim http://mcp.starsim.org:8001/sse
 claude mcp add --transport sse sciris http://mcp.starsim.org:8002/sse
 ```
+
