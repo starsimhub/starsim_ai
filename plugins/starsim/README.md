@@ -29,7 +29,7 @@ Inside Claude Code, add the starsim_ai repo as a local marketplace, then install
 ## Plugin structure
 
 ```
-starsim_plugin/
+plugins/starsim/
 ├── .claude-plugin/
 │   └── plugin.json          # Plugin manifest
 ├── .mcp.json                # MCP server definitions (context7)

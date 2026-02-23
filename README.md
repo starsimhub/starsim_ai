@@ -7,8 +7,8 @@ Starsim-aware AI agents, skills, and tools.
 
 This repo contains two Claude Code plugins, installable via the built-in marketplace:
 
-- **starsim-ai** (`starsim_plugin/`) — Starsim and Sciris MCP tools and modeling skills
-- **disease-modeling** (`disease_modeling_plugin/`) — General disease modeling skills and tools (WIP)
+- **starsim-ai** (`plugins/starsim/`) — Starsim and Sciris MCP tools and modeling skills
+- **disease-modeling** (`plugins/disease_modeling/`) — General disease modeling skills and tools (WIP)
 
 To install, add this repo as a marketplace inside Claude Code:
 

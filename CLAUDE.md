@@ -10,8 +10,8 @@ Starsim documentation is also available on Context7: https://context7.com/starsi
 
 ## Repository Structure
 
-- `starsim_plugin/` - Claude Code plugin for Starsim (MCP tools and modeling skills).
-- `disease_modeling_plugin/` - Claude Code plugin for general disease modeling (WIP).
+- `plugins/starsim/` - Claude Code plugin for Starsim (MCP tools and modeling skills).
+- `plugins/disease_modeling/` - Claude Code plugin for general disease modeling (WIP).
 - `deploy_mcp_pack/` - MCP server deployment scripts. The `deploy` script creates databases from GitHub repos and starts SSE servers.
 - `.claude-plugin/` - Root marketplace definition listing both plugins.
 - `.github/workflows/main.yml` - CI/CD pipeline that deploys MCP servers to a remote VM via SSH.
