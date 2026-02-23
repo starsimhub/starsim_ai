@@ -117,4 +117,5 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    with sc.timer():
+        asyncio.run(main())
