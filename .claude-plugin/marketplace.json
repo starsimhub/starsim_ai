@@ -9,10 +9,17 @@
   "plugins": [
     {
       "name": "starsim-ai",
-      "source": "./",
+      "source": "./starsim_plugin",
       "description": "Starsim and Sciris MCP tools and modeling skills",
       "version": "0.1.0",
       "keywords": ["starsim", "sciris", "disease-modeling", "epidemiology"]
+    },
+    {
+      "name": "disease-modeling",
+      "source": "./disease_modeling_plugin",
+      "description": "General disease modeling skills and tools",
+      "version": "0.1.0",
+      "keywords": ["disease-modeling", "epidemiology", "compartmental-models"]
     }
   ]
 }
