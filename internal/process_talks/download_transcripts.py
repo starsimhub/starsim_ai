@@ -50,21 +50,19 @@ lectures = {
     "7.2 Surveillance: Forecasting": "37bfa097-c756-4c60-9fec-af3c00526143",
     "7.3 Genomic Epidemiology": "3830e492-59e0-43de-99e5-af3b00ce0da3",
 }
-path = sc.thispath() / 'harvard'
+path = sc.thispath() / 'harvard/transcripts'
 os.makedirs(path, exist_ok=True)
 
 for i, (title, arg) in enumerate(lectures.items()):
     filename = sc.sanitizefilename(title)
     dest = f'{path}/{filename}.vtt'
     sc.printgreen(f'\nDownloading transcript {i+1} of {len(lectures)}')
-    print(f'  ID: {arg}')
-    print(f'  {dest}')
+    print(f'ID: {arg}')
     cmd = f'curl -s -L "{host}?id={arg}&escape=true&language=0" -o "{dest}"'
     sc.runcommand(cmd, printinput=False, printoutput=False)
 
     # Strip VTT metadata, sequence numbers, and timestamps, keeping only content
     txt_dest = dest.replace('.vtt', '.txt')
-    print('   Processing vtt→txt...')
     with open(dest) as f:
         vtt = f.read()
     lines = [line for line in vtt.splitlines()
@@ -73,6 +71,9 @@ for i, (title, arg) in enumerate(lectures.items()):
              and not re.match(r'\d{2}:\d{2}:\d{2}\.\d+ --> \d{2}:\d{2}:\d{2}\.\d+', line.strip())
              and not line.strip().startswith('WEBVTT')]
 
-    sc.savetext(txt_dest, sc.newlinejoin(lines))
+    text = sc.newlinejoin(lines).replace('&#39;', "'")
+    sc.savetext(txt_dest, text)
+    sc.rmpath(dest)
+    print(f'Saved {txt_dest}')
 
 T.toc()
