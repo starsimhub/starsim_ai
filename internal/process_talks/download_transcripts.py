@@ -3,7 +3,10 @@ Script to download transcripts.
 """
 
 import os
+import re
 import sciris as sc
+
+T = sc.timer()
 
 host = 'https://harvard.hosted.panopto.com/Panopto/Pages/Transcription/GetCaptionVTT.ashx'
 lectures = {
@@ -51,9 +54,25 @@ path = sc.thispath() / 'harvard'
 os.makedirs(path, exist_ok=True)
 
 for i, (title, arg) in enumerate(lectures.items()):
-    dest = f'{path}/transcript_{i}.vtt'
-    print(f'Downloading transcript {i+1} of {len(lectures)} to {dest} ({arg})...')
+    filename = sc.sanitizefilename(title)
+    dest = f'{path}/{filename}.vtt'
+    sc.printgreen(f'\nDownloading transcript {i+1} of {len(lectures)}')
+    print(f'  ID: {arg}')
+    print(f'  {dest}')
     cmd = f'curl -s -L "{host}?id={arg}&escape=true&language=0" -o "{dest}"'
     sc.runcommand(cmd, printinput=False, printoutput=False)
 
-print('Done')
+    # Strip VTT metadata, sequence numbers, and timestamps, keeping only content
+    txt_dest = dest.replace('.vtt', '.txt')
+    print('   Processing vtt→txt...')
+    with open(dest) as f:
+        vtt = f.read()
+    lines = [line for line in vtt.splitlines()
+             if line.strip()
+             and not re.match(r'^\d+$', line.strip())
+             and not re.match(r'\d{2}:\d{2}:\d{2}\.\d+ --> \d{2}:\d{2}:\d{2}\.\d+', line.strip())
+             and not line.strip().startswith('WEBVTT')]
+
+    sc.savetext(txt_dest, sc.newlinejoin(lines))
+
+T.toc()
