@@ -5,7 +5,7 @@ Each URL gets its own Claude agent that downloads and processes it concurrently.
 """
 
 import asyncio
-from claude_agent_sdk import query, ClaudeAgentOptions
+from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
 
 
 async def process_url(url: str, instruction: str) -> dict:
@@ -20,10 +20,9 @@ async def process_url(url: str, instruction: str) -> dict:
             max_turns=5,
         ),
     ):
-        if message.type == "system" and message.subtype == "init":
-            session_id = message.session_id
-        elif message.type == "result":
+        if isinstance(message, ResultMessage):
             result_text = message.result
+            session_id = message.session_id
 
     return {"url": url, "result": result_text, "session_id": session_id}
 

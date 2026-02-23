@@ -8,7 +8,7 @@ import asyncio
 from pathlib import Path
 
 import sciris as sc
-from claude_agent_sdk import query, ClaudeAgentOptions
+from claude_agent_sdk import query, ClaudeAgentOptions, ResultMessage
 
 PROMPT_TEMPLATE = """\
 Summarize this lecture transcript into a structured markdown document \
@@ -49,7 +49,7 @@ async def summarize_transcript(title: str, content: str) -> str:
             max_turns=1,
         ),
     ):
-        if message.type == "result":
+        if isinstance(message, ResultMessage):
             result_text = message.result
 
     return result_text
