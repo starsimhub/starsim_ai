@@ -9,8 +9,8 @@ import sciris as sc
 import claude_agent_sdk as claude
 
 PROMPT_TEMPLATE = """\
-Summarize this lecture transcript into a structured markdown document \
-focused on disease modeling skills. Use this exact format:
+Summarize the lecture summaries into actionable disease modeling skills. Make one
+skill per week of content.
 
 # {title}
 
@@ -35,7 +35,7 @@ content dictate the length. Shorter or longer is fine as long as \
 the summary is substantive and complete.
 
 ---
-TRANSCRIPT:
+SUMMARIES:
 {content}"""
 
 
