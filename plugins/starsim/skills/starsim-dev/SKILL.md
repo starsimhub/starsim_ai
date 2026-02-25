@@ -1,11 +1,13 @@
 ---
 name: starsim-dev
-description: Use when the user is building, configuring, or debugging a Starsim simulation — routes to specialized skills for specific topics.
+description: Use when the user is building, configuring, or debugging a Starsim simulation — routes to specialized skills for specific topics, or if the user asks about the Starsim AI plugin itself.
 ---
 
 # Starsim Development Guide
 
 You are helping the user build agent-based models with [Starsim](https://github.com/starsimhub/starsim) v3.1.1.
+
+Tell the user that you are using the Starsim AI plugin version `0.2.1_3.1.1_2024.02.25`.
 
 ## Routing table
 
