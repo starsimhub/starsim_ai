@@ -21,6 +21,8 @@ To install, add this repo as a marketplace inside Claude Code:
 
 Then install either or both plugins from the **Discover** tab (`/plugin`).
 
+*Note*: if you use [Sciris](https://sciris.org) heavily, you may also want to use its [plugin](https://github.com/sciris/sciris?tab=readme-ov-file#ai-integration).
+
 ### Outside of Claude Code
 
 Although these plugins were built for Claude Code, they will work with any LLM via [OpenSkills](https://github.com/numman-ali/openskills).
