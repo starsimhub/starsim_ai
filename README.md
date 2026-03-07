@@ -33,7 +33,8 @@ https://gitmcp.io/starsimhub/starsim
 
 ### Manual MCP usage
 
-*Note: manual MCP servers may not be up to date; GitMCP or Context7 is recommended.*
+> [!WARNING]
+> Manual MCP servers may not be up to date; GitMCP or Context7 is recommended.
 
 Built on [mcp_pack](https://github.com/krosenfeld-IDM/mcp-pack).
 
