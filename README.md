@@ -3,12 +3,14 @@
 This repository contains AI agents, skills, and tools for working with [Starsim](https://starsim.org), the agent-based disease modeling framework.
 
 
-## Plugins and skills
+## Plugins
 
 This repo contains two Claude Code plugins, installable via the built-in marketplace:
 
 - **starsim-ai** (`plugins/starsim/`) — Starsim and Sciris MCP tools and modeling skills
 - **disease-modeling** (`plugins/disease_modeling/`) — General disease modeling skills and tools
+
+### Claude Code
 
 To install, add this repo as a marketplace inside Claude Code:
 
@@ -17,13 +19,15 @@ To install, add this repo as a marketplace inside Claude Code:
 | **CLI** | Run `/plugin marketplace add https://github.com/starsimhub/starsim_ai` |
 | **VS Code extension** | `/plugin` → Manage plugins → Marketplaces → Add from `https://github.com/starsimhub/starsim_ai` |
 
-Then install either plugin from the **Discover** tab (`/plugin`).
+Then install either or both plugins from the **Discover** tab (`/plugin`).
 
 ### Outside of Claude Code
 
 Although these plugins were built for Claude Code, they will work with any LLM via [OpenSkills](https://github.com/numman-ali/openskills).
 
 ## Skills
+
+### Starsim
 
 The **Starsim-AI** plugin includes the following skills:
 
@@ -52,6 +56,21 @@ The **Starsim-AI** plugin includes the following skills:
 | [`starsim-style-tests`](plugins/starsim/skills/starsim-style-tests/SKILL.md) | Testing conventions |
 | [`sciris-utilities`](plugins/starsim/skills/sciris-utilities/SKILL.md) | Sciris utilities (file I/O, parallelization, data structures) |
 | [`stisim-modeling`](plugins/starsim/skills/stisim-modeling/SKILL.md) | STIsim — STI disease modeling (HIV, syphilis, etc.) |
+
+### Disease modeling
+
+The **Disease-Modeling** plugin was trained on Harvard's *[Introduction to Infectious Disease Modeling](https://hsph.harvard.edu/research/communicable-disease-ccdd/resources/id-modeling/)* course. It includes the following skills:
+
+| Skill | Purpose |
+|-------|---------|
+| [`basic_epi_modeling`](plugins/disease_modeling/skills/basic_epi_modeling/SKILL.md) | Foundational concepts — disease burden, transmission routes, compartmental model selection |
+| [`sir-models`](plugins/disease_modeling/skills/sir-models/SKILL.md) | SIR compartmental models, R0, epidemic curves, ODE solvers |
+| [`sir-elaborations`](plugins/disease_modeling/skills/sir-elaborations/SKILL.md) | SEIR, MSIR, SIRS, age structure, contact matrices, multi-strain dynamics |
+| [`vaccination`](plugins/disease_modeling/skills/vaccination/SKILL.md) | Vaccination modeling — herd immunity, efficacy types, waning immunity, pulse/ring strategies |
+| [`vectors`](plugins/disease_modeling/skills/vectors/SKILL.md) | Vector-borne and waterborne disease models (Ross-MacDonald, SIWR, multi-strain) |
+| [`parameter-estimation`](plugins/disease_modeling/skills/parameter-estimation/SKILL.md) | Model fitting — least squares, MLE, Bayesian inference, calibration |
+| [`surveillance`](plugins/disease_modeling/skills/surveillance/SKILL.md) | Surveillance data, nowcasting, forecasting, genomic epidemiology |
+
 
 ## MCP servers
 
