@@ -158,6 +158,24 @@ for par, (lo, hi) in par_effects.items():
     assert v0 <= v1, f'Expected higher {par} to increase prevalence'
 ```
 
+### Multi-sim tests: use factory functions for modules
+
+Starsim modules are mutated during `sim.init()`, so the same module instances cannot be shared across multiple sims. Use a factory function to create fresh instances:
+
+```python
+# WRONG — modules are mutated during init
+demog = [ss.Pregnancy(), ss.Deaths()]
+sim1 = ss.Sim(demographics=demog).run()
+sim2 = ss.Sim(demographics=demog).run()  # Fails
+
+# RIGHT — factory function creates fresh instances
+def make_demog():
+    return [ss.Pregnancy(), ss.Deaths()]
+
+sim1 = ss.Sim(demographics=make_demog()).run()
+sim2 = ss.Sim(demographics=make_demog()).run()
+```
+
 ### Agent counts
 
 Use the smallest population that produces meaningful results:

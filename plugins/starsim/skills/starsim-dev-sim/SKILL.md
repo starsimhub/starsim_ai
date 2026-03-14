@@ -519,6 +519,32 @@ print(ppl.age.raw.mean())   # Mean age including dead -- usually not what you wa
 
 Use `.raw` only when you explicitly need dead/removed agents, such as for post-mortem analysis or validating total population accounting.
 
+**Do not reuse module instances across multiple sims.** Starsim modules (diseases, demographics, interventions, etc.) are mutated during `sim.init()` — they get bound to a specific sim, their states are initialized, distributions are seeded, etc. Passing the same module instances to multiple sims will cause failures or incorrect results.
+
+```python
+# WRONG — modules are mutated during init, can't be reused
+demog = [ss.Pregnancy(), ss.Deaths()]
+sim1 = ss.Sim(demographics=demog).run()
+sim2 = ss.Sim(demographics=demog).run()  # Fails or gives wrong results
+
+# RIGHT — use a factory function to create fresh instances
+def make_demog():
+    return [ss.Pregnancy(), ss.Deaths()]
+
+sim1 = ss.Sim(demographics=make_demog()).run()
+sim2 = ss.Sim(demographics=make_demog()).run()
+```
+
+**Use `custom=` for non-standard modules, not `modules=`.** Since v3.2.0, modules that don't fit standard types (diseases, interventions, demographics, networks, connectors, analyzers) should be passed via `custom=`. The `modules=` argument still works but auto-relocates modules to the appropriate attribute.
+
+```python
+# Preferred
+sim = ss.Sim(custom=ss.FetalHealth())
+
+# Also works but less explicit
+sim = ss.Sim(modules=ss.FetalHealth())
+```
+
 **Do not modify parameters after `sim.init()` expecting re-sampling.** Distributions are sampled during initialization. Changing a parameter value after `init()` affects only future samples (e.g., for newly born agents), not already-initialized agent states. If you need to change behavior mid-run, use an intervention or modify the state arrays directly.
 
 **Do not change Bernoulli distributions to other types.**

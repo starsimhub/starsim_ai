@@ -366,6 +366,56 @@ sim.plot('gonorrhea')
 
 Connectors are placed in the `diseases` list (or wherever ordering makes sense for the simulation step order). They are generic `ss.Module` instances, not disease subclasses. The connector's `step()` runs each timestep and can read or modify any disease state on any agent.
 
+### Pattern 9: Congenital outcomes via mother-to-child transmission
+
+The base `Infection` class provides a generic framework for congenital outcomes. Diseases opt in by defining `birth_outcome_keys` and `birth_outcomes` in pars. Transmission to unborn agents happens via `PrenatalNet`; at infection time, `set_congenital()` samples an outcome and schedules it at delivery. `fire_congenital_outcomes()` executes those events each timestep.
+
+```python
+import numpy as np
+import sciris as sc
+import starsim as ss
+
+class CongenitalDisease(ss.SIR):
+    def __init__(self, pars=None, **kwargs):
+        super().__init__()
+        self.define_pars(
+            birth_outcome_keys = ['stillborn', 'congenital', 'normal'],
+            birth_outcomes     = sc.objdict(
+                default=ss.choice(a=3, p=np.array([0.3, 0.4, 0.3])),
+            ),
+        )
+        self.update_pars(pars, **kwargs)
+        self.define_states(
+            ss.FloatArr('ti_stillborn'),
+            ss.FloatArr('ti_congenital'),
+            ss.FloatArr('ti_normal'),
+            ss.BoolArr('congenital'),
+            ss.FloatArr('cs_outcome'),
+        )
+        return
+
+    def step_state(self):
+        super().step_state()
+        self.fire_congenital_outcomes()
+        return
+
+sim = ss.Sim(
+    demographics=[ss.Pregnancy(fertility_rate=ss.freqperyear(30), burnin=True), ss.Deaths()],
+    diseases=CongenitalDisease(beta=0.2, init_prev=0.2),
+    networks=[ss.PrenatalNet(), ss.RandomNet()],
+)
+sim.run()
+```
+
+Key details:
+- **`birth_outcome_keys`**: list of outcome names. Each must have a corresponding `ti_<key>` FloatArr state and optionally a BoolArr of the same name.
+- **`birth_outcomes`**: `sc.objdict` of `ss.choice` distributions. Use `'default'` for a single distribution; use multiple keys (e.g., `'early'`, `'late'`) with `_assign_congenital_outcomes()` override for GA- or state-dependent probabilities.
+- **Death outcomes**: `'miscarriage'`, `'nnd'`, `'stillborn'` trigger `request_death`. Non-lethal outcomes set a BoolArr state.
+- **`fire_congenital_outcomes()`**: call from `step_state()` to process scheduled events.
+- **`_assign_congenital_outcomes()`**: override for diseases with state- or GA-dependent outcome probabilities.
+
+This replaces the need for each disease to implement its own congenital logic from scratch. See `starsim_examples/mnch/` for complete examples.
+
 ### Accessing results
 
 After running a simulation, disease results are available via two equivalent paths:

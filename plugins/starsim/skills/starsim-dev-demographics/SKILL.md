@@ -325,6 +325,58 @@ sim = ss.Sim(demographics=[
 ])
 ```
 
+### 12. Pregnancy loss and neonatal death classification
+
+`ss.Pregnancy` classifies adverse birth outcomes automatically:
+
+- **Background pregnancy loss**: Set `p_loss` to a non-zero per-timestep probability. Early losses are naturally more common because pregnancies spend more timesteps at early gestational ages.
+- **Miscarriage vs stillbirth**: Prenatal deaths are classified by gestational age: `<loss_threshold` (default 20 weeks) = miscarriage, `>=loss_threshold` = stillbirth. Both background losses and disease-specific losses (via `request_death`) are classified.
+- **Preterm birth**: Births at `<preterm_threshold` (default 37 weeks) are flagged as preterm; `<very_preterm_threshold` (default 32 weeks) as very preterm.
+- **Neonatal death**: Deaths of agents aged 0-28 days are passively detected and classified as neonatal deaths. Any mechanism that kills a newborn (disease, congenital outcomes, background mortality) is captured.
+
+```python
+import starsim as ss
+
+pregnancy = ss.Pregnancy(
+    fertility_rate      = ss.freqperyear(30),
+    p_loss              = ss.bernoulli(p=0.005),  # 0.5% per-timestep loss probability
+    loss_threshold      = ss.weeks(20),           # Default: 20 weeks
+    preterm_threshold   = ss.weeks(37),           # Default: 37 weeks
+)
+
+sim = ss.Sim(demographics=[pregnancy, ss.Deaths()], networks='random')
+sim.run()
+
+# Results
+print(sim.results.pregnancy.miscarriages.sum())
+print(sim.results.pregnancy.stillbirths.sum())
+print(sim.results.pregnancy.nnds.sum())
+print(sim.results.pregnancy.n_preterm.sum())
+print(sim.results.pregnancy.preterm_rate)
+```
+
+States stored on newborns: `preterm`, `very_preterm`, `neonatal_death`. States stored on mothers: `n_miscarriages`, `n_stillbirths`.
+
+### 13. FetalHealth module
+
+`ss.FetalHealth` tracks gestational-age-dependent birth weight, growth restriction, and timing shifts. Pass as a custom module:
+
+```python
+sim = ss.Sim(
+    demographics=ss.Pregnancy(),
+    custom=ss.FetalHealth(),
+    networks=ss.PrenatalNet(),
+)
+```
+
+Connectors and interventions interact with fetal health via callback methods:
+- `fh.apply_timing_shift(uids, weeks)` — bring delivery forward (preterm)
+- `fh.apply_growth_restriction(uids, penalty)` — reduce birth weight
+- `fh.reverse_timing_shift(uids, fraction)` — partially undo timing shift
+- `fh.reverse_growth_restriction(uids, amount)` — partially undo growth restriction
+
+See `starsim_examples/mnch/` for complete connector and intervention examples.
+
 ## Quick reference
 
 | Task | Code |
@@ -342,3 +394,7 @@ sim = ss.Sim(demographics=[
 | Maternal mortality | `ss.Pregnancy(p_maternal_death=ss.bernoulli(0.001))` |
 | Breastfeeding duration | `ss.Pregnancy(dur_breastfeed=ss.lognorm_ex(mean=ss.years(0.5), std=ss.years(0.25)))` |
 | Fertility scaling factor | `ss.Pregnancy(rel_fertility=1000)` -- set to 1000 if data are per 1000 women |
+| Background pregnancy loss | `ss.Pregnancy(p_loss=ss.bernoulli(p=0.005))` |
+| Loss classification threshold | `ss.Pregnancy(loss_threshold=ss.weeks(20))` |
+| Preterm threshold | `ss.Pregnancy(preterm_threshold=ss.weeks(37))` |
+| Fetal health tracking | `ss.Sim(custom=ss.FetalHealth(), networks=ss.PrenatalNet())` |
