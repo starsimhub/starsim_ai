@@ -192,18 +192,25 @@ raw_result = sim.people.age.raw[idx]     # Agent with UID 5
 
 Pick one indexing approach and use it consistently. Prefer the Starsim array methods (`.mean()`, indexing with `ss.uids()`) over direct NumPy access to `.raw` or `.values`. Code that works correctly with no deaths will silently break once deaths occur if it conflates positional and UID-based indexing.
 
-### Boolean-indexing a starsim array returns plain numpy
+### Do not wrap starsim array indexing results in np.asarray
 
-When you boolean-index a starsim `Arr` (e.g., `arr[mask]`), the result is a plain numpy array, not a starsim `Arr`. Do not call `.values` on it — it's already raw numpy.
+When you index a starsim `Arr` with UIDs or a boolean mask, the result already works with numpy operations, boolean logic, and matplotlib. Wrapping in `np.asarray(..., dtype=bool)` or similar is unnecessary noise.
 
 ```python
-# WRONG — arr[mask] is already numpy, .values doesn't exist
-data = fh.birth_weight[mask].values  # AttributeError
+# WRONG — unnecessary wrapping
+is_ptb = np.asarray(preg.preterm[newborn_uids], dtype=bool)
+is_lbw = np.asarray(fh.lbw[newborn_uids], dtype=bool)
 
 # RIGHT — just use the result directly
-data = fh.birth_weight[mask]
-plt.hist(data, bins=30)
+is_ptb = preg.preterm[newborn_uids]
+is_lbw = fh.lbw[newborn_uids]
+
+# These already support boolean ops, sum, plotting, etc.
+n_both = int(np.sum(is_ptb & is_lbw))
+plt.hist(fh.birth_weight[mask], bins=30)
 ```
+
+Also note: boolean-indexing (e.g., `arr[bool_mask]`) returns a plain numpy array, so calling `.values` on it will fail.
 
 ### Do not forget to check if UID arrays are empty
 
