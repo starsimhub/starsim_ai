@@ -20,6 +20,13 @@
       "description": "General disease modeling skills and tools",
       "version": "0.1.0",
       "keywords": ["disease-modeling", "epidemiology", "compartmental-models"]
+    },
+    {
+      "name": "project-improver",
+      "source": "./plugins/project-improver",
+      "description": "Score and improve scientific research code quality, usability, and safety against IDM engineering quality tiers",
+      "version": "0.1.0",
+      "keywords": ["quality", "scoring", "scientific", "python", "r", "engineering"]
     }
   ]
 }
