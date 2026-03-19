@@ -5,5 +5,7 @@
   "author": {
     "name": "IDM"
   },
+  "repository": "https://github.com/starsimhub/starsim_ai",
+  "license": "MIT",
   "keywords": ["quality", "scoring", "scientific", "python", "r", "engineering"]
 }

@@ -24,6 +24,7 @@ tools:
   - Glob
   - Grep
   - Bash
+model: sonnet
 color: yellow
 ---
 

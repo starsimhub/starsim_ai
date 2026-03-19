@@ -23,6 +23,7 @@ tools:
   - Glob
   - Grep
   - Bash
+model: sonnet
 color: red
 ---
 
