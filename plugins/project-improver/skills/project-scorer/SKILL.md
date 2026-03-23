@@ -172,33 +172,58 @@ overall_score = round(quality_raw * 40 + usability_raw * 40 + safety_raw * 20)
 
 Set `failed: true` in the final JSON if either `quality.correct.failed` or `safety.compliant.failed` is true.
 
-## Step 5: Assemble Full JSON
+## Step 5: Assemble Full Results
 
 Construct the result object with this exact schema:
 
-```json
-{
-  "project": "<project_path>",
-  "tier": <tier>,
-  "overall_score": <0-100>,
-  "failed": <true|false>,
-  "quality": {
-    "correct":  {"score": <0-10>, "weight": 7, "reason": "..."},
-    "clear":    {"score": <0-10>, "weight": 2, "reason": "..."},
-    "concise":  {"score": <0-10>, "weight": 1, "reason": "..."}
-  },
-  "usability": {
-    "simple":     {"score": <0-10>, "weight": 3, "reason": "..."},
-    "powerful":   {"score": <0-10>, "weight": 2, "reason": "..."},
-    "performant": {"score": <0-10>, "weight": 2, "reason": "..."},
-    "documented": {"score": <0-10>, "weight": 2, "reason": "..."},
-    "accessible": {"score": <0-10>, "weight": 1, "reason": "..."}
-  },
-  "safety": {
-    "compliant":    {"score": <0-10>, "weight": 6, "reason": "..."},
-    "reproducible": {"score": <0-10>, "weight": 4, "reason": "..."}
-  }
-}
+```yaml
+project: <project_path>
+tier: <tier>
+overall_score: <0-100>
+failed: <true|false>
+quality:
+  correct:
+    score: <0-10>
+    weight: 7
+    reason: "..."
+  clear:
+    score: <0-10>
+    weight: 2
+    reason: "..."
+  concise:
+    score: <0-10>
+    weight: 1
+    reason: "..."
+usability:
+  simple:
+    score: <0-10>
+    weight: 3
+    reason: "..."
+  powerful:
+    score: <0-10>
+    weight: 2
+    reason: "..."
+  performant:
+    score: <0-10>
+    weight: 2
+    reason: "..."
+  documented:
+    score: <0-10>
+    weight: 2
+    reason: "..."
+  accessible:
+    score: <0-10>
+    weight: 1
+    reason: "..."
+safety:
+  compliant:
+    score: <0-10>
+    weight: 6
+    reason: "..."
+  reproducible:
+    score: <0-10>
+    weight: 4
+    reason: "..."
 ```
 
 Omit N/A metrics (Tier 3: `powerful`, `accessible`) from the usability object.
@@ -242,8 +267,8 @@ If failed=true, clearly state which metric caused the failure and why.>
 
 ## Full Results
 
-```json
-<the assembled JSON, indented 2 spaces>
+```yaml
+<the assembled YAML>
 ```
 ```
 
