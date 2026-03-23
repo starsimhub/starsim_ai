@@ -43,7 +43,7 @@ A Claude Code plugin that scores and improves scientific research code against t
 /project-improver:project-scorer https://github.com/org/repo 2   # score a GitHub repo
 ```
 
-Output: `project_engineering_score.md` written to the project directory.
+Output: `engineering_score.md` written to the project directory.
 
 ### Fix a project
 
@@ -52,11 +52,11 @@ Output: `project_engineering_score.md` written to the project directory.
 /project-improver:project-fixer /path/to/repo       # fix a specific path
 ```
 
-Requires `project_engineering_score.md` to exist (run the scorer first).
+Requires `engineering_score.md` to exist (run the scorer first).
 
 ## Output Format
 
-The scorer writes `project_engineering_score.md` with:
+The scorer writes `engineering_score.md` with:
 - **Summary**: plain-language overview of results
 - **Recommendations**: concrete, prioritized, actionable steps
 - **Full Results**: complete JSON with per-metric scores, weights, and reasons

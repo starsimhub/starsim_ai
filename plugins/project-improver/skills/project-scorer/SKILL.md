@@ -5,7 +5,7 @@ argument-hint: "[project_path_or_github_url] [tier]"
 allowed-tools: Read, Glob, Grep, Bash, Write, Agent, WebFetch
 ---
 
-Score a software project against the IDM engineering quality guidelines and write a `project_engineering_score.md` report.
+Score a software project against the IDM engineering quality guidelines and write an `engineering_score.md` report.
 
 Skill version: v1.1_2026.03.23
 
@@ -55,10 +55,10 @@ Tier <tier> rubric for quality (from IDM scoring schema):
 <paste the tier's quality rubric from the schema here>
 
 Instructions:
-1. Explore the project: read key source files, check for tests, inspect structure, naming, docstrings, code organization, duplication.
-2. Run `find <project> -name "*.py" -o -name "*.R" | head -50` to discover files.
+1. Explore the project: read key source files, check for tests, inspect structure, naming, docstrings, code organization, duplication. Determine the main programming language(s) used.
+2. Run e.g. `find <project> -name "*.py"` to discover files for a project in Python.
 3. Check for test files: look for test_*.py, *_test.py, tests/ directory, testthat/ for R.
-4. For Tier 3: check for CI/CD config (.github/workflows/, .travis.yml, etc.).
+4. For Tier 1: check for CI/CD config (.github/workflows/, .travis.yml, etc.).
 5. Look for obvious bugs, scientific errors, or suspicious logic.
 6. Score each metric as an integer 0–10.
 
@@ -201,7 +201,7 @@ Before writing the file, synthesize 3–8 concrete, actionable recommendations r
 - Note if it is quick (minutes), medium (hours), or large (days) effort
 - Note if it cannot be automated (e.g., "Write a user guide" — human effort required)
 
-## Step 7: Write project_engineering_score.md
+## Step 7: Write engineering_score.md
 
 Write this file to the **project directory** (not the current working directory if different):
 
@@ -233,6 +233,7 @@ If failed=true, clearly state which metric caused the failure and why.>
 
 ## Notes
 
+- **Skip large and binary files**: Do not read files larger than 100 KB, or files with extensions `.csv`, `.pdf`, `.png`, `.jpg`, `.jpeg`, `.gif`, `.bmp`, `.svg`, `.ico`, `.tiff`, `.webp`. These are too large or not human-readable source code.
 - If the project is very large, focus on a representative sample: main source files, entry points, README, tests, and CI config.
 - For R projects: look for `DESCRIPTION`, `R/`, `tests/testthat/`, `vignettes/`, `man/` directories.
 - For Python projects: look for `pyproject.toml`, `setup.py`, `src/`, `tests/`, `.github/`.

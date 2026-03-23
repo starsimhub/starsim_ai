@@ -1,22 +1,22 @@
 ---
 name: Project Fixer
-description: The Project Fixer skill reads recommendations from a project_engineering_score.md report and implements prioritized improvements to the project. Use this skill when the user asks to "fix my project", "implement the recommendations", "improve my project score", "apply engineering fixes", or invokes /project-improver:project-fixer. Also use when the user says "now fix it" after running the project scorer.
+description: The Project Fixer skill reads recommendations from a engineering_score.md report and implements prioritized improvements to the project. Use this skill when the user asks to "fix my project", "implement the recommendations", "improve my project score", "apply engineering fixes", or invokes /project-improver:project-fixer. Also use when the user says "now fix it" after running the project scorer.
 argument-hint: "[project_path]"
 allowed-tools: Read, Glob, Grep, Bash, Write, Edit
 ---
 
-Read recommendations from `project_engineering_score.md` and implement prioritized improvements to the project.
+Read recommendations from `engineering_score.md` and implement prioritized improvements to the project.
 
 Skill version: v1.1_2026.03.23
 
 ## Step 1: Find and Read the Score Report
 
-1. If the user provided a `project_path`, look for `project_engineering_score.md` in that directory.
+1. If the user provided a `project_path`, look for `engineering_score.md` in that directory.
 2. Otherwise, look in the current working directory.
 3. If the file does not exist, stop and tell the user:
-   > "No `project_engineering_score.md` found. Please run `/project-improver:project-scorer` first to generate the report."
+   > "No `engineering_score.md` found. Please run `/project-improver:project-scorer` first to generate the report."
 
-Read the full contents of `project_engineering_score.md` — particularly the **Recommendations** and **Full Results** sections.
+Read the full contents of `engineering_score.md` — particularly the **Recommendations** and **Full Results** sections.
 
 ## Step 2: Create a Prioritized Implementation Plan
 
