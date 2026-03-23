@@ -1,0 +1,11 @@
+{
+  "name": "project-improver",
+  "version": "0.1.0",
+  "description": "Score and improve scientific research code quality, usability, and safety against IDM engineering quality tiers",
+  "author": {
+    "name": "IDM"
+  },
+  "repository": "https://github.com/starsimhub/starsim_ai",
+  "license": "MIT",
+  "keywords": ["quality", "scoring", "scientific", "python", "r", "engineering"]
+}
