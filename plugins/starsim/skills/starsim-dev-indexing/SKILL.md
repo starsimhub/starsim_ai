@@ -206,11 +206,11 @@ is_ptb = preg.preterm[newborn_uids]
 is_lbw = fh.lbw[newborn_uids]
 
 # These already support boolean ops, sum, plotting, etc.
-n_both = int(np.sum(is_ptb & is_lbw))
+n_both = (is_ptb & is_lbw).sum()
 plt.hist(fh.birth_weight[mask], bins=30)
 ```
 
-Also note: boolean-indexing (e.g., `arr[bool_mask]`) returns a plain numpy array, so calling `.values` on it will fail.
+Also note: indexing an `Arr` with UIDs (e.g., `arr[uids]`) returns a plain numpy array, not an `Arr` — so calling `.values` on the result will fail. Just use the result directly.
 
 ### Do not forget to check if UID arrays are empty
 

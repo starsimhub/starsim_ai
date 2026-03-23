@@ -10,25 +10,11 @@ Lessons learned from implementing stillbirth/miscarriage/NND classification and 
 
 **Fix for skills**: The `starsim-dev-sim` skill should document that `custom=` is the correct kwarg for modules that don't fit standard types (diseases, interventions, demographics, networks, connectors, analyzers). The `modules=` argument still works but auto-relocates.
 
-### 2. Module instances cannot be shared across sims (starsim-dev-sim, starsim-style-tests)
+### 2. ~~Module instances cannot be shared across sims~~ (starsim-dev-sim, starsim-style-tests)
 
-**What happened**: Tried `demog = [ss.Pregnancy(...), ss.Deaths(...)]` and passed the same list to three different sims. The second and third sims failed because starsim modules are mutated during `sim.init()` — they get bound to a specific sim, their states get initialized, etc.
+**What happened**: Tried `demog = [ss.Pregnancy(...), ss.Deaths(...)]` and passed the same list to three different sims. Something else went wrong, but we initially blamed module sharing.
 
-**Fix for skills**: Add an anti-pattern to `starsim-dev-sim`:
-```python
-# WRONG — modules are mutated during init, can't be reused
-demog = [ss.Pregnancy(), ss.Deaths()]
-sim1 = ss.Sim(demographics=demog).run()
-sim2 = ss.Sim(demographics=demog).run()  # Fails or gives wrong results
-
-# RIGHT — use a factory function
-def make_demog():
-    return [ss.Pregnancy(), ss.Deaths()]
-sim1 = ss.Sim(demographics=make_demog()).run()
-sim2 = ss.Sim(demographics=make_demog()).run()
-```
-
-Also add to `starsim-style-tests` as a common test pattern (multiple sims need fresh module instances).
+**Correction**: This is actually fine — `copy_inputs=True` by default, so starsim deep-copies module instances when initializing. No skill update needed.
 
 ### 3. Misleading naming (starsim-style-python)
 
@@ -57,15 +43,15 @@ age_days = ss.years(sim.people.age[uids]).days
 
 ### 6. `.values` on starsim arrays (starsim-dev-indexing)
 
-**What happened**: Used `fh.birth_weight[born].values` in plotting code. Starsim `Arr` objects don't have a `.values` attribute like pandas. Use `np.asarray(arr)` to extract raw numpy arrays.
+**What happened**: Used `fh.birth_weight[born].values` in plotting code. `ss.Arr` objects *do* have `.values` (like pandas), but indexing an `Arr` with UIDs returns a plain NumPy array (which doesn't have `.values`).
 
 **Fix for skills**: Add to `starsim-dev-indexing`:
 ```python
-# WRONG — starsim arrays are not pandas
-data = arr[mask].values
+# WRONG — indexing with UIDs already returns a plain numpy array
+data = arr[uids].values  # AttributeError: numpy array has no .values
 
-# RIGHT — use np.asarray for raw numpy
-data = np.asarray(arr[mask])
+# RIGHT — just use the indexed result directly
+data = arr[uids]
 ```
 
 ### 7. Removing imports still needed by remaining code (general)
@@ -80,9 +66,9 @@ data = np.asarray(arr[mask])
 
 ## Skills That Need Updates
 
-1. **starsim-dev-sim**: Document `custom=` kwarg; add module-sharing anti-pattern
+1. **starsim-dev-sim**: Document `custom=` kwarg
 2. **starsim-dev-time**: Add array time conversion pattern (`ss.years(array).days`)
-3. **starsim-dev-indexing**: Add `np.asarray()` pattern for extracting raw arrays
-4. **starsim-dev-demographics**: Document pregnancy loss classification, NND detection, FetalHealth, congenital framework
-5. **starsim-dev-diseases**: Document generic congenital framework (`set_congenital`, `fire_congenital_outcomes`, `birth_outcome_keys`, `birth_outcomes`)
-6. **starsim-style-tests**: Add module factory pattern for multi-sim tests; note directional comparison tolerances
+3. **starsim-dev-indexing**: Note that UID-indexing returns plain numpy (no `.values`)
+4. **starsim-dev-demographics**: Reference docs for pregnancy loss classification, NND detection, FetalHealth, congenital framework
+5. **starsim-dev-diseases**: Reference docs for generic congenital framework
+6. **starsim-style-tests**: Note directional comparison tolerances
