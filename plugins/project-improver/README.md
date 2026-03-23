@@ -64,6 +64,11 @@ The scorer writes `project_engineering_score.md` with:
 ## Installation
 
 ```bash
-# From the starsim-ai marketplace
+# From the starsim-ai marketplace: https://github.com/starsimhub/starsim_ai
 # Add to .claude-plugin/marketplace.json or install via Claude Code settings
 ```
+
+## Updating
+
+1. Download the engineering quality guidelines document as `admin/engineering_quality_guidelines.md`.
+2. Copy `admin/update_prompt.md` into Claude and run.

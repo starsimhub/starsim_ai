@@ -5,7 +5,7 @@ Jeremy Manson4, Jen Schripsema1, Mandy Izzo1, Jennifer Simeon1, Paul Saxman1
 
 1 Institute for Disease Modeling, Gates Foundation;  2 Burnet Institute; 3 Open Source Pledge; 4 Google
 
-Version 1.0 | 2026.03.23
+Version 1.1 | 2026.03.23
 
 # **Guidelines**
 

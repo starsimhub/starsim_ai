@@ -11,7 +11,7 @@ Score a software project against the IDM engineering quality guidelines and writ
 
 The user provides two arguments:
 - **project**: path to a local directory OR a GitHub URL (e.g., `https://github.com/org/repo`). Default: current working directory.
-- **tier**: integer 1, 2, or 3. This is required — ask the user if not provided.
+- **tier**: integer 1, 2, or 3. Default: 2.
 
 **Tier definitions (brief)**:
 - Tier 1: One-off/exploratory code used by one person
