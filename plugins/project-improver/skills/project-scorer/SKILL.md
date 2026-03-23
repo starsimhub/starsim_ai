@@ -9,6 +9,16 @@ Score a software project against the IDM engineering quality guidelines and writ
 
 Skill version: v1.1_2026.03.23
 
+## Step 0: Record Start Time
+
+Before doing anything else, run the following bash command and save the result as `START_EPOCH`:
+
+```bash
+date +%s
+```
+
+This will be used in Step 7 to compute elapsed time.
+
 ## Step 1: Parse Arguments
 
 The user provides two arguments:
@@ -203,7 +213,11 @@ Before writing the file, synthesize 3–8 concrete, actionable recommendations r
 
 ## Step 7: Write engineering_score.md
 
-Write this file to the **project directory** (not the current working directory if different):
+Write this file to the **project directory** (not the current working directory if different).
+
+Before writing, compute the following:
+- **Date**: run `date +%Y-%m-%d` to get the current date.
+- **Time spent**: run `date +%s` to get `END_EPOCH`, then compute `END_EPOCH - START_EPOCH` (recorded in Step 0). Format as an integer number of seconds.
 
 ```markdown
 # Project Engineering Score
@@ -212,6 +226,8 @@ Write this file to the **project directory** (not the current working directory 
 **Tier**: <tier> (<tier name>)
 **Overall Score**: <overall_score>/100
 **Status**: <PASS or FAIL — FAIL if failed=true>
+**Date**: <YYYY-MM-DD>
+**Time spent**: <seconds>s
 
 ## Summary
 
