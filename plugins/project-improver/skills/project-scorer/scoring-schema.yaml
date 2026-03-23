@@ -34,13 +34,13 @@ metrics:
 tier1:
   quality:
     correct:
-      description: "Works correctly with comprehensive test coverage and CI/CD"
+      description: "Works correctly with comprehensive test coverage, CI/CD, and no magic numbers"
       rubric:
         0:  "Obvious bugs affecting scientific validity"
         3:  "Appears to work but no tests"
         5:  "Tests present but <60% coverage"
-        7:  "Good tests (>80% coverage) but no CI/CD pipeline"
-        10: "Comprehensive tests with CI/CD; edge cases covered; scientifically validated"
+        7:  "Good tests (>80% coverage) but no CI/CD pipeline, or magic numbers present"
+        10: "Comprehensive tests with CI/CD; edge cases covered; scientifically validated; no magic numbers"
     clear:
       description: "Sensible modular structure with full docstrings and style guide compliance"
       rubric:
@@ -76,22 +76,22 @@ tier1:
         7:  "Most use cases covered; classes easily subclassed"
         10: "All assumptions transparent and modifiable; easily subclassed; edge cases handled"
     performant:
-      description: "Within 2-5x of native; profiled and optimized where it matters"
+      description: "Within 2-5x of native; profiled and optimized; slow tasks parallelizable"
       rubric:
         0:  "10x+ slower than a reasonable implementation"
         3:  "Major algorithmic inefficiencies (wrong data structures, unnecessary loops)"
         5:  "Mostly performant with some minor issues"
         7:  "Well-optimized, within 2-5x of native for typical inputs"
-        10: "Profiled, optimized critical paths, no regressions, within 2-5x of native"
+        10: "Profiled, optimized critical paths, no regressions, within 2-5x of native; slow (>30s) tasks can be parallelized"
     documented:
-      description: "Readmes in each folder, full docstrings for all functions, tutorials, user guide"
+      description: "Readmes in each folder, full docstrings, tutorials, user guide, style guide compliance"
       rubric:
         0:  "No documentation of any kind"
         2:  "Readme only, no docstrings"
         4:  "Readme and some docstrings"
         6:  "Good readme and full public API docstrings, no tutorial"
         8:  "Readmes, full docstrings, at least one tutorial"
-        10: "Readmes in each folder, docstrings for every function, tutorials, and user guide"
+        10: "Readmes in each folder, docstrings for every function, tutorials, user guide, and style guide compliance"
     accessible:
       description: "Public repo with all key files, easy installation, community support, AI-optimized"
       rubric:
@@ -168,7 +168,7 @@ tier2:
         5:  "Mostly acceptable but some notable inefficiencies"
         10: "No obvious/major inefficiencies for the scale of the problem"
     documented:
-      description: "One or more readmes and at least one tutorial"
+      description: "One or more readmes and a tutorial or set of example scripts"
       rubric:
         0:  "No readme and no docstrings"
         3:  "Minimal readme only, no docstrings"
@@ -204,7 +204,7 @@ tier2:
 tier3:
   quality:
     correct:
-      description: "Appears to work as intended; no tests expected"
+      description: "Works as intended; tested through usage with no formal tests expected"
       rubric:
         0:  "Code is obviously broken or produces scientifically incorrect results"
         5:  "Code appears to work but contains suspicious logic or unverified outputs"

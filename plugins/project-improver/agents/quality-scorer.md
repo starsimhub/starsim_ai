@@ -51,6 +51,7 @@ Work through these steps systematically:
 ### 2. Assess correctness (quality.correct)
 - Read 3–5 key source files to understand what the code does
 - Look for: obvious bugs, off-by-one errors, wrong statistical formulas, incorrect array indexing, misuse of random seeds, hardcoded assumptions that seem wrong
+- Check for "magic numbers": unexplained numeric constants in the code that should be documented with a source (e.g., a rate constant of `0.0037` with no comment or citation)
 - **For Tier 1 and 2**: find test files (`test_*.py`, `*_test.py`, `tests/`, `testthat/`)
   - Estimate coverage breadth: do tests cover main functionality? edge cases?
   - Run `find <project> -name "*.py" | xargs grep -l "def test_" 2>/dev/null | wc -l` to count test files

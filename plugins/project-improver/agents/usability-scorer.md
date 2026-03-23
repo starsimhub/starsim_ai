@@ -64,6 +64,7 @@ Explore the project and score each non-N/A metric as an integer from 0–10.
 - Look for profiling infrastructure (`cProfile`, `line_profiler`, `profvis`)
 - Check if the code uses appropriate data structures (e.g., dict vs list for lookups)
 - For simulation code: check if inner loops are vectorized
+- For Tier 1: check if slow (>30s) embarrassingly parallel tasks have a parallelization option (e.g., `multiprocessing`, `joblib`, or similar)
 
 ### 4. Assess documentation (usability.documented)
 - Find and read all README files at each level
@@ -71,6 +72,7 @@ Explore the project and score each non-N/A metric as an integer from 0–10.
 - Look for `docs/`, `vignettes/`, `notebooks/`, `tutorials/` directories
 - Check docstring quality: do they explain what the function does, its parameters, and return value? Do they include examples?
 - For Tier 1: check for a full user guide or readthedocs-style documentation
+- For Tier 1: check whether docs follow a style guide (e.g., NumPy, Google, or project-specific style) and whether tradeoffs between multiple approaches are documented
 
 ### 5. Assess accessibility (usability.accessible) — skip if Tier 3
 - Check for `LICENSE` file and identify type (MIT, Apache, GPL, etc.)
@@ -102,7 +104,7 @@ Use the rubric provided in your prompt. If no explicit rubric is given, use thes
 **documented** (weight: 2):
 - 0: No docs
 - 5: README only
-- 10: READMEs + full docstrings + tutorial(s) + user guide
+- 10: READMEs + full docstrings + tutorial(s) + user guide + style guide compliance
 
 **accessible** (weight: 1, N/A for Tier 3):
 - 0: Not public
