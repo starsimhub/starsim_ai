@@ -167,7 +167,13 @@ quality_raw    = sum(score * w for m, w in quality_weights.items()   if m in qua
 usability_raw  = sum(score * w for m, w in usability_weights.items() if m in usability_results) / sum(w for m, w in usability_weights.items() if m in usability_results)
 safety_raw     = sum(score * w for m, w in safety_weights.items()    if m in safety_results)    / sum(w for m, w in safety_weights.items()    if m in safety_results)
 
-overall_score = round(quality_raw * 40 + usability_raw * 40 + safety_raw * 20)
+# Category scores out of 100 (for the summary table)
+quality_score   = round(quality_raw   * 10)
+usability_score = round(usability_raw * 10)
+safety_score    = round(safety_raw    * 10)
+
+# Overall score: category weights are 40%, 40%, 20% of a 0-100 scale
+overall_score = round(quality_raw * 4 + usability_raw * 4 + safety_raw * 2)
 ```
 
 Set `failed: true` in the final JSON if either `quality.correct.failed` or `safety.compliant.failed` is true.
@@ -226,7 +232,7 @@ safety:
     reason: "..."
 ```
 
-Omit N/A metrics (Tier 3: `powerful`, `accessible`) from the usability object.
+Give N/A metrics (Tier 3: `powerful`, `accessible`) a score of 10.
 
 ## Step 6: Generate Recommendations
 
@@ -255,6 +261,26 @@ Before writing, compute the following:
 **Time spent**: <seconds>s
 
 ## Summary
+
+| Category | Score | Weight |
+| -- | -- | -- |
+| Quality | <quality_score>/100 | 40% |
+| Usability | <usability_score>/100 | 40% |
+| Safety | <safety_score>/100 | 20% |
+| **Total** | **<overall_score>/100** | 100% |
+
+| Metric | Score | Notes |
+| -- | -- | -- |
+| correct | <score>/10 | <brief reason> |
+| clear | <score>/10 | <brief reason> |
+| concise | <score>/10 | <brief reason> |
+| simple | <score>/10 | <brief reason> |
+| powerful | <score>/10 | <brief reason> |
+| performant | <score>/10 | <brief reason> |
+| documented | <score>/10 | <brief reason> |
+| accessible | <score>/10 | <brief reason> |
+| compliant | <score>/10 | <brief reason> |
+| reproducible | <score>/10 | <brief reason> |
 
 <2–4 sentences plain-language summary. Mention the strongest areas and the biggest gaps.
 If failed=true, clearly state which metric caused the failure and why.>
