@@ -7,6 +7,8 @@ allowed-tools: Read, Glob, Grep, Bash, Write, Agent, WebFetch
 
 Score a software project against the IDM engineering quality guidelines and write a `project_engineering_score.md` report.
 
+Skill version: v1.1_2026.03.23
+
 ## Step 1: Parse Arguments
 
 The user provides two arguments:
@@ -14,9 +16,9 @@ The user provides two arguments:
 - **tier**: integer 1, 2, or 3. Default: 2.
 
 **Tier definitions (brief)**:
-- Tier 1: One-off/exploratory code used by one person
+- Tier 1: Software library or DPG used by many people for many years
 - Tier 2: Small-scale project used by multiple people or projects
-- Tier 3: Software library used by many people for many years
+- Tier 3: One-off/exploratory code used by one person
 
 **If a GitHub URL is given**: Use `gh repo clone <url> /tmp/project-scorer-$(date +%s)` to clone to a temporary directory. Set `project` to that path.
 
@@ -29,7 +31,7 @@ This file contains:
 - Category weights (quality 40%, usability 40%, safety 20%)
 - Per-metric weights within each category
 - Tier-specific rubrics with 0/mid/10 anchor descriptions
-- N/A metrics for each tier (Tier 1: `powerful` and `accessible` are N/A)
+- N/A metrics for each tier (Tier 3: `powerful` and `accessible` are N/A)
 
 ## Step 3: Dispatch Sub-Agents in Parallel
 
@@ -80,10 +82,10 @@ Score the five USABILITY metrics: simple, powerful, performant, documented, acce
 
 Metric weights (within-category, for JSON output):
 - simple: 3
-- powerful: 2  (N/A for Tier 1 — omit from JSON if tier=1)
+- powerful: 2  (N/A for Tier 3 — omit from JSON if tier=3)
 - performant: 2
 - documented: 2
-- accessible: 1  (N/A for Tier 1 — omit from JSON if tier=1)
+- accessible: 1  (N/A for Tier 3 — omit from JSON if tier=3)
 
 Tier <tier> rubric for usability (from IDM scoring schema):
 <paste the tier's usability rubric from the schema here>
@@ -126,8 +128,8 @@ Instructions:
 2. Check for LICENSE file and identify license type.
 3. Inspect dependency files (requirements.txt, pyproject.toml, setup.py, DESCRIPTION, renv.lock) for restrictive licenses (GPL, AGPL, proprietary).
 4. Check version control: git log --oneline -5, look for git tags, check for semantic versioning.
-5. For Tier 2+: check for version pins in dependency files.
-6. For Tier 3: check if package is on PyPI/CRAN, look for CHANGELOG.
+5. For Tier 1 and 2: check for version pins in dependency files.
+6. For Tier 1: check if package is on PyPI/CRAN, look for CHANGELOG.
 7. Score each metric as an integer 0–10.
 
 Return ONLY a JSON object (no other text):
@@ -189,7 +191,7 @@ Construct the result object with this exact schema:
 }
 ```
 
-Omit N/A metrics (Tier 1: `powerful`, `accessible`) from the usability object.
+Omit N/A metrics (Tier 3: `powerful`, `accessible`) from the usability object.
 
 ## Step 6: Generate Recommendations
 

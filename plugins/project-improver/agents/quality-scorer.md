@@ -51,10 +51,10 @@ Work through these steps systematically:
 ### 2. Assess correctness (quality.correct)
 - Read 3–5 key source files to understand what the code does
 - Look for: obvious bugs, off-by-one errors, wrong statistical formulas, incorrect array indexing, misuse of random seeds, hardcoded assumptions that seem wrong
-- **For Tier 2+**: find test files (`test_*.py`, `*_test.py`, `tests/`, `testthat/`)
+- **For Tier 1 and 2**: find test files (`test_*.py`, `*_test.py`, `tests/`, `testthat/`)
   - Estimate coverage breadth: do tests cover main functionality? edge cases?
   - Run `find <project> -name "*.py" | xargs grep -l "def test_" 2>/dev/null | wc -l` to count test files
-- **For Tier 3**: look for CI/CD (`.github/workflows/`, `.travis.yml`, `tox.ini`)
+- **For Tier 1**: look for CI/CD (`.github/workflows/`, `.travis.yml`, `tox.ini`)
 - **Failure condition**: if you find serious bugs that affect scientific validity (e.g., wrong model equations, data corruption, undefined behavior that would produce incorrect results), set `failed: true` and `score: 0`
 
 ### 3. Assess clarity (quality.clear)
@@ -63,13 +63,13 @@ Work through these steps systematically:
 - Read a representative function — is the logic easy to follow?
 - Look for comments and docstrings on key functions
 - Check for style guide adherence (consistent naming conventions)
-- **For Tier 3**: look for a style guide reference or linter config (`.flake8`, `pyproject.toml [tool.ruff]`, `.lintr`)
+- **For Tier 1**: look for a style guide reference or linter config (`.flake8`, `pyproject.toml [tool.ruff]`, `.lintr`)
 
 ### 4. Assess conciseness (quality.concise)
 - Look for copy-pasted code blocks (near-duplicate functions or files)
 - Check if external libraries are used where appropriate (e.g., numpy instead of hand-rolled loops)
 - Look for obviously redundant code (dead code, repeated logic)
-- **For Tier 3**: check for a linter in CI
+- **For Tier 1**: check for a linter in CI
 
 ## Scoring
 

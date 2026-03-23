@@ -50,7 +50,7 @@ Explore the project and score each non-N/A metric as an integer from 0–10.
 - Check if common workflows require <10 lines of code
 - Look for `examples/` or `scripts/` directory with usage demos
 
-### 2. Assess power/flexibility (usability.powerful) — skip if Tier 1
+### 2. Assess power/flexibility (usability.powerful) — skip if Tier 3
 - Look for configuration options beyond the minimum: keyword arguments, config files, subclassable base classes
 - Check if key assumptions are exposed as parameters (e.g., is the random seed settable? are model parameters modifiable?)
 - Look for `**kwargs` patterns or abstract base classes
@@ -70,14 +70,14 @@ Explore the project and score each non-N/A metric as an integer from 0–10.
 - Count functions/classes with docstrings vs without (sample 10–20 public functions)
 - Look for `docs/`, `vignettes/`, `notebooks/`, `tutorials/` directories
 - Check docstring quality: do they explain what the function does, its parameters, and return value? Do they include examples?
-- For Tier 3: check for a full user guide or readthedocs-style documentation
+- For Tier 1: check for a full user guide or readthedocs-style documentation
 
-### 5. Assess accessibility (usability.accessible) — skip if Tier 1
+### 5. Assess accessibility (usability.accessible) — skip if Tier 3
 - Check for `LICENSE` file and identify type (MIT, Apache, GPL, etc.)
 - Check for `setup.py`, `pyproject.toml`, `DESCRIPTION` (R) — is it installable?
 - Look for `CHANGELOG.md` or `CHANGES.md`
 - Check `README` for installation instructions — count the steps
-- For Tier 3: check if published on PyPI (`pip install <name>`) or CRAN
+- For Tier 1: check if published on PyPI (`pip install <name>`) or CRAN
 - Check for AI-optimization markers: skills, MCP servers, CLAUDE.md
 
 ## Scoring
@@ -89,7 +89,7 @@ Use the rubric provided in your prompt. If no explicit rubric is given, use thes
 - 5: Common cases work but require setup
 - 10: Intuitive APIs, great error messages, one-liner common workflows
 
-**powerful** (weight: 2, N/A for Tier 1):
+**powerful** (weight: 2, N/A for Tier 3):
 - 0: Completely hardcoded
 - 5: Some configurability
 - 10: All assumptions modifiable; easily extensible
@@ -104,7 +104,7 @@ Use the rubric provided in your prompt. If no explicit rubric is given, use thes
 - 5: README only
 - 10: READMEs + full docstrings + tutorial(s) + user guide
 
-**accessible** (weight: 1, N/A for Tier 1):
+**accessible** (weight: 1, N/A for Tier 3):
 - 0: Not public
 - 5: Public but missing license
 - 10: All key files, easy install, community support

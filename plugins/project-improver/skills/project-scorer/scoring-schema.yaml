@@ -7,7 +7,7 @@
 #   safety_raw     = (compliant*6 + reproducible*4) / 10
 #   overall_score  = round(quality_raw*40 + usability_raw*40 + safety_raw*20)
 #
-# N/A metrics (Tier 1: powerful, accessible): omit from JSON; normalize weights within category.
+# N/A metrics (Tier 3: powerful, accessible): omit from JSON; normalize weights within category.
 # FAILURE: Set failed=true and score=0 if quality.correct or safety.compliant has a serious violation.
 
 category_weights:
@@ -22,160 +22,16 @@ metrics:
     concise:  {within_weight: 1}
   usability:
     simple:      {within_weight: 3}
-    powerful:    {within_weight: 2, na_for_tiers: [1]}
+    powerful:    {within_weight: 2, na_for_tiers: [3]}
     performant:  {within_weight: 2}
     documented:  {within_weight: 2}
-    accessible:  {within_weight: 1, na_for_tiers: [1]}
+    accessible:  {within_weight: 1, na_for_tiers: [3]}
   safety:
     compliant:    {within_weight: 6, fail_on_serious: true}
     reproducible: {within_weight: 4}
 
-# ─── TIER 1: One-off / exploratory ────────────────────────────────────────────
+# ─── TIER 1: Large-scale project (library/DPG) ───────────────────────────────
 tier1:
-  quality:
-    correct:
-      description: "Appears to work as intended; no tests expected"
-      rubric:
-        0:  "Code is obviously broken or produces scientifically incorrect results"
-        5:  "Code appears to work but contains suspicious logic or unverified outputs"
-        7:  "Code appears to work as intended and is consistent with its stated purpose"
-        10: "Code has been validated through real-world or representative usage"
-    clear:
-      description: "Author confident it will still make sense to them in 1-3 months"
-      rubric:
-        0:  "Confusing names or structure; author will struggle to understand it in months"
-        5:  "Readable but author may need significant effort to re-orient after time away"
-        10: "Author would understand it in 1-3 months with minimal effort"
-    concise:
-      description: "No egregious code duplication"
-      rubric:
-        0:  "Large blocks of copy-pasted code with trivial modifications across files"
-        5:  "Some obvious duplication that could be easily factored out"
-        10: "No egregious duplication"
-
-  usability:
-    simple:
-      description: "Common workflows are not too painful"
-      rubric:
-        0:  "Extremely painful to run; requires non-obvious manual setup"
-        5:  "Workable but awkward"
-        10: "Common workflows run without significant friction"
-    powerful:
-      description: "N/A — no flexibility expected"
-      rubric: "N/A"
-    performant:
-      description: "Total runtime over project lifetime is less than time to refactor"
-      rubric:
-        0:  "Total runtime would clearly exceed the time spent optimizing"
-        5:  "Borderline: could be faster but probably acceptable given project scope"
-        10: "Total runtime over project lifetime is clearly less than time to refactor"
-    documented:
-      description: "A folder readme"
-      rubric:
-        0:  "No readme or folder-level documentation"
-        5:  "Partial readme missing key sections (purpose, how to run)"
-        10: "Clear readme covering purpose, installation, and basic usage"
-    accessible:
-      description: "N/A — often a private repo"
-      rubric: "N/A"
-
-  safety:
-    compliant:
-      description: "No legal or security vulnerabilities"
-      rubric:
-        0:  "FAIL: Exposed API keys/secrets, PII in repo, or unlicensed proprietary data"
-        3:  "Minor concerns: data files without clear provenance or unclear licensing"
-        7:  "Appears compliant with minor uncertainties"
-        10: "Fully compliant: no secrets, data used with permission, no restrictive deps"
-    reproducible:
-      description: "Key files checked into GitHub"
-      rubric:
-        0:  "Key scripts or data files not in any version control"
-        5:  "Most files present but some key assets missing"
-        10: "All key files checked in; another person could reproduce the analysis"
-
-# ─── TIER 2: Small-scale project ──────────────────────────────────────────────
-tier2:
-  quality:
-    correct:
-      description: "Works as intended with basic test coverage"
-      rubric:
-        0:  "Code is broken or produces scientifically wrong results"
-        3:  "Works but has known bugs or edge-case failures"
-        5:  "Appears to work but has no tests"
-        7:  "Works with basic tests covering main workflows"
-        10: "Works with good test coverage including edge cases"
-    clear:
-      description: "Modular structure if appropriate, some comments"
-      rubric:
-        0:  "No discernible structure, confusing names"
-        3:  "Readable but structured as one large file with no modularization"
-        5:  "Some modularization but sparse docstrings/comments"
-        7:  "Good modular structure with sufficient comments"
-        10: "Well-modular, descriptive names, good docstrings throughout"
-    concise:
-      description: "No excessive duplication"
-      rubric:
-        0:  "Extensive duplication; codebase could be 50%+ shorter"
-        5:  "Some duplication or clear missed opportunities for library usage"
-        10: "No excessive duplication; external libraries used where appropriate"
-
-  usability:
-    simple:
-      description: "APIs for most common pathways are easy and intuitive"
-      rubric:
-        0:  "Very unclear how to invoke; no sensible public API"
-        3:  "Some API exists but many sharp edges and missing defaults"
-        5:  "Works for common cases but requires significant setup"
-        7:  "APIs mostly intuitive with sensible defaults"
-        10: "Easy, intuitive APIs with validation and helpful error messages"
-    powerful:
-      description: "Some flexibility is allowed"
-      rubric:
-        0:  "Completely hardcoded for one use case"
-        5:  "Some configurability but key assumptions unexposed"
-        10: "Vast majority of use cases met without modifying code"
-    performant:
-      description: "No obvious/major inefficiencies"
-      rubric:
-        0:  "Major obvious inefficiencies (Python loops where vectorization is possible, O(n²) where O(n) exists)"
-        5:  "Mostly acceptable but some notable inefficiencies"
-        10: "No obvious/major inefficiencies for the scale of the problem"
-    documented:
-      description: "One or more readmes and at least one tutorial"
-      rubric:
-        0:  "No readme and no docstrings"
-        3:  "Minimal readme only, no docstrings"
-        5:  "Good readme but no tutorial or docstrings"
-        7:  "Readme with good docstrings but no tutorial"
-        10: "Readme(s), good docstrings, and at least one interactive tutorial"
-    accessible:
-      description: "Code is open source"
-      rubric:
-        0:  "Private repo or no public access"
-        5:  "Public repo but missing license or basic installation instructions"
-        10: "Public repo with MIT license, installable in 1-3 commands"
-
-  safety:
-    compliant:
-      description: "No legal or security vulnerabilities"
-      rubric:
-        0:  "FAIL: Exposed secrets, unlicensed data, or proprietary dependency licenses"
-        3:  "Restrictive licensed dependencies (e.g., GPL in an otherwise MIT project)"
-        5:  "Minor gaps (missing license file, unclear data provenance)"
-        7:  "Compliant with minor uncertainties"
-        10: "Fully compliant: open license, no secrets, no restrictive dependencies"
-    reproducible:
-      description: "Different people at different times can get the same results"
-      rubric:
-        0:  "No version control or dependency documentation"
-        3:  "Files versioned but dependencies undocumented"
-        5:  "Dependencies specified but without version pins"
-        7:  "Dependencies specified with appropriate pins (>=)"
-        10: "Pinned deps, documented environment, deterministic seeds where applicable"
-
-# ─── TIER 3: Software library ──────────────────────────────────────────────────
-tier3:
   quality:
     correct:
       description: "Works correctly with comprehensive test coverage and CI/CD"
@@ -263,3 +119,147 @@ tier3:
         6:  "Semantic versioning and deps specified but not on PyPI/CRAN"
         8:  "Semantic versioning, PyPI/CRAN published, dependencies pinned (>=)"
         10: "Full stack: semver + git tags, published on PyPI/CRAN, pinned deps, optional lock file, deterministic random seeds"
+
+# ─── TIER 2: Small-scale project ──────────────────────────────────────────────
+tier2:
+  quality:
+    correct:
+      description: "Works as intended with basic test coverage"
+      rubric:
+        0:  "Code is broken or produces scientifically wrong results"
+        3:  "Works but has known bugs or edge-case failures"
+        5:  "Appears to work but has no tests"
+        7:  "Works with basic tests covering main workflows"
+        10: "Works with good test coverage including edge cases"
+    clear:
+      description: "Modular structure if appropriate, some comments"
+      rubric:
+        0:  "No discernible structure, confusing names"
+        3:  "Readable but structured as one large file with no modularization"
+        5:  "Some modularization but sparse docstrings/comments"
+        7:  "Good modular structure with sufficient comments"
+        10: "Well-modular, descriptive names, good docstrings throughout"
+    concise:
+      description: "No excessive duplication"
+      rubric:
+        0:  "Extensive duplication; codebase could be 50%+ shorter"
+        5:  "Some duplication or clear missed opportunities for library usage"
+        10: "No excessive duplication; external libraries used where appropriate"
+
+  usability:
+    simple:
+      description: "APIs for most common pathways are easy and intuitive"
+      rubric:
+        0:  "Very unclear how to invoke; no sensible public API"
+        3:  "Some API exists but many sharp edges and missing defaults"
+        5:  "Works for common cases but requires significant setup"
+        7:  "APIs mostly intuitive with sensible defaults"
+        10: "Easy, intuitive APIs with validation and helpful error messages"
+    powerful:
+      description: "Some flexibility is allowed"
+      rubric:
+        0:  "Completely hardcoded for one use case"
+        5:  "Some configurability but key assumptions unexposed"
+        10: "Vast majority of use cases met without modifying code"
+    performant:
+      description: "No obvious/major inefficiencies"
+      rubric:
+        0:  "Major obvious inefficiencies (Python loops where vectorization is possible, O(n²) where O(n) exists)"
+        5:  "Mostly acceptable but some notable inefficiencies"
+        10: "No obvious/major inefficiencies for the scale of the problem"
+    documented:
+      description: "One or more readmes and at least one tutorial"
+      rubric:
+        0:  "No readme and no docstrings"
+        3:  "Minimal readme only, no docstrings"
+        5:  "Good readme but no tutorial or docstrings"
+        7:  "Readme with good docstrings but no tutorial"
+        10: "Readme(s), good docstrings, and at least one interactive tutorial"
+    accessible:
+      description: "Code is open source"
+      rubric:
+        0:  "Private repo or no public access"
+        5:  "Public repo but missing license or basic installation instructions"
+        10: "Public repo with MIT license, installable in 1-3 commands"
+
+  safety:
+    compliant:
+      description: "No legal or security vulnerabilities"
+      rubric:
+        0:  "FAIL: Exposed secrets, unlicensed data, or proprietary dependency licenses"
+        3:  "Restrictive licensed dependencies (e.g., GPL in an otherwise MIT project)"
+        5:  "Minor gaps (missing license file, unclear data provenance)"
+        7:  "Compliant with minor uncertainties"
+        10: "Fully compliant: open license, no secrets, no restrictive dependencies"
+    reproducible:
+      description: "Different people at different times can get the same results"
+      rubric:
+        0:  "No version control or dependency documentation"
+        3:  "Files versioned but dependencies undocumented"
+        5:  "Dependencies specified but without version pins"
+        7:  "Dependencies specified with appropriate pins (>=)"
+        10: "Pinned deps, documented environment, deterministic seeds where applicable"
+
+# ─── TIER 3: One-off / exploratory ────────────────────────────────────────────
+tier3:
+  quality:
+    correct:
+      description: "Appears to work as intended; no tests expected"
+      rubric:
+        0:  "Code is obviously broken or produces scientifically incorrect results"
+        5:  "Code appears to work but contains suspicious logic or unverified outputs"
+        7:  "Code appears to work as intended and is consistent with its stated purpose"
+        10: "Code has been validated through real-world or representative usage"
+    clear:
+      description: "Author confident it will still make sense to them in 1-3 months"
+      rubric:
+        0:  "Confusing names or structure; author will struggle to understand it in months"
+        5:  "Readable but author may need significant effort to re-orient after time away"
+        10: "Author would understand it in 1-3 months with minimal effort"
+    concise:
+      description: "No egregious code duplication"
+      rubric:
+        0:  "Large blocks of copy-pasted code with trivial modifications across files"
+        5:  "Some obvious duplication that could be easily factored out"
+        10: "No egregious duplication"
+
+  usability:
+    simple:
+      description: "Common workflows are not too painful"
+      rubric:
+        0:  "Extremely painful to run; requires non-obvious manual setup"
+        5:  "Workable but awkward"
+        10: "Common workflows run without significant friction"
+    powerful:
+      description: "N/A — no flexibility expected"
+      rubric: "N/A"
+    performant:
+      description: "Total runtime over project lifetime is less than time to refactor"
+      rubric:
+        0:  "Total runtime would clearly exceed the time spent optimizing"
+        5:  "Borderline: could be faster but probably acceptable given project scope"
+        10: "Total runtime over project lifetime is clearly less than time to refactor"
+    documented:
+      description: "A folder readme"
+      rubric:
+        0:  "No readme or folder-level documentation"
+        5:  "Partial readme missing key sections (purpose, how to run)"
+        10: "Clear readme covering purpose, installation, and basic usage"
+    accessible:
+      description: "N/A — often a private repo"
+      rubric: "N/A"
+
+  safety:
+    compliant:
+      description: "No legal or security vulnerabilities"
+      rubric:
+        0:  "FAIL: Exposed API keys/secrets, PII in repo, or unlicensed proprietary data"
+        3:  "Minor concerns: data files without clear provenance or unclear licensing"
+        7:  "Appears compliant with minor uncertainties"
+        10: "Fully compliant: no secrets, data used with permission, no restrictive deps"
+    reproducible:
+      description: "Key files checked into GitHub"
+      rubric:
+        0:  "Key scripts or data files not in any version control"
+        5:  "Most files present but some key assets missing"
+        10: "All key files checked in; another person could reproduce the analysis"

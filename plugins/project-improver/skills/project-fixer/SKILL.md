@@ -7,6 +7,8 @@ allowed-tools: Read, Glob, Grep, Bash, Write, Edit
 
 Read recommendations from `project_engineering_score.md` and implement prioritized improvements to the project.
 
+Skill version: v1.1_2026.03.23
+
 ## Step 1: Find and Read the Score Report
 
 1. If the user provided a `project_path`, look for `project_engineering_score.md` in that directory.
@@ -164,15 +166,15 @@ Repository = "<TODO: GitHub URL>"
 ```
 
 #### Improving README
-Add missing sections. A Tier 1 README needs at minimum:
+Add missing sections. A Tier 3 (one-off) README needs at minimum:
 - `## Overview` — what the project does (1–3 sentences)
 - `## Installation` — how to set it up
 - `## Usage` — how to run it (minimal example)
 
-A Tier 2/3 README additionally needs:
+A Tier 1 and 2 README additionally needs:
 - `## Requirements`
 - `## Project structure` — brief description of key files/folders
-- `## Contributing` (Tier 3)
+- `## Contributing` (Tier 1 library)
 
 #### Fixing code duplication
 Identify the duplicate code, extract it into a well-named helper function, and replace the duplicates with calls to that function. Only refactor when it clearly improves readability — do not create unnecessary abstractions.
