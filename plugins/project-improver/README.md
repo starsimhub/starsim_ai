@@ -11,9 +11,9 @@ A Claude Code plugin that scores and improves scientific research code against t
 
 | Tier | Description | Example |
 |------|-------------|---------|
-| 1 | One-off / exploratory | A script to plot simulation outputs |
+| 1 | Software library | Starsim, FPsim, LASER |
 | 2 | Small-scale project | A model calibrated to one country |
-| 3 | Software library | Starsim, FPsim, LASER |
+| 3 | One-off / exploratory | A script to plot simulation outputs |
 
 ## Scoring Metrics
 
