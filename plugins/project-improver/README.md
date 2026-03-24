@@ -1,4 +1,4 @@
-# project-improver
+# Project-Improver
 
 A Claude Code plugin that scores and improves scientific research code against the [IDM Software Engineering Quality Guidelines](https://github.com/InstituteforDiseaseModeling).
 
