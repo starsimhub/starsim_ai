@@ -5,18 +5,30 @@ argument-hint: "[project_path_or_github_url] [tier]"
 allowed-tools: Read, Glob, Grep, Bash, Write, Agent, WebFetch
 ---
 
-Score a software project against the IDM engineering quality guidelines and write a `project_engineering_score.md` report.
+Score a software project against the IDM engineering quality guidelines and write an `engineering_score.md` report.
+
+Skill version: v1.1_2026.03.23
+
+## Step 0: Record Start Time
+
+Before doing anything else, run the following bash command and save the result as `START_EPOCH`:
+
+```bash
+date +%s
+```
+
+This will be used in Step 7 to compute elapsed time.
 
 ## Step 1: Parse Arguments
 
 The user provides two arguments:
 - **project**: path to a local directory OR a GitHub URL (e.g., `https://github.com/org/repo`). Default: current working directory.
-- **tier**: integer 1, 2, or 3. This is required — ask the user if not provided.
+- **tier**: integer 1, 2, or 3. Default: 2.
 
 **Tier definitions (brief)**:
-- Tier 1: One-off/exploratory code used by one person
+- Tier 1: Software library or DPG used by many people for many years
 - Tier 2: Small-scale project used by multiple people or projects
-- Tier 3: Software library used by many people for many years
+- Tier 3: One-off/exploratory code used by one person
 
 **If a GitHub URL is given**: Use `gh repo clone <url> /tmp/project-scorer-$(date +%s)` to clone to a temporary directory. Set `project` to that path.
 
@@ -29,7 +41,7 @@ This file contains:
 - Category weights (quality 40%, usability 40%, safety 20%)
 - Per-metric weights within each category
 - Tier-specific rubrics with 0/mid/10 anchor descriptions
-- N/A metrics for each tier (Tier 1: `powerful` and `accessible` are N/A)
+- N/A metrics for each tier (Tier 3: `powerful` and `accessible` are N/A)
 
 ## Step 3: Dispatch Sub-Agents in Parallel
 
@@ -53,10 +65,10 @@ Tier <tier> rubric for quality (from IDM scoring schema):
 <paste the tier's quality rubric from the schema here>
 
 Instructions:
-1. Explore the project: read key source files, check for tests, inspect structure, naming, docstrings, code organization, duplication.
-2. Run `find <project> -name "*.py" -o -name "*.R" | head -50` to discover files.
+1. Explore the project: read key source files, check for tests, inspect structure, naming, docstrings, code organization, duplication. Determine the main programming language(s) used.
+2. Run e.g. `find <project> -name "*.py"` to discover files for a project in Python.
 3. Check for test files: look for test_*.py, *_test.py, tests/ directory, testthat/ for R.
-4. For Tier 3: check for CI/CD config (.github/workflows/, .travis.yml, etc.).
+4. For Tier 1: check for CI/CD config (.github/workflows/, .travis.yml, etc.).
 5. Look for obvious bugs, scientific errors, or suspicious logic.
 6. Score each metric as an integer 0–10.
 
@@ -80,10 +92,10 @@ Score the five USABILITY metrics: simple, powerful, performant, documented, acce
 
 Metric weights (within-category, for JSON output):
 - simple: 3
-- powerful: 2  (N/A for Tier 1 — omit from JSON if tier=1)
+- powerful: 2  (N/A for Tier 3 — omit from JSON if tier=3)
 - performant: 2
 - documented: 2
-- accessible: 1  (N/A for Tier 1 — omit from JSON if tier=1)
+- accessible: 1  (N/A for Tier 3 — omit from JSON if tier=3)
 
 Tier <tier> rubric for usability (from IDM scoring schema):
 <paste the tier's usability rubric from the schema here>
@@ -126,8 +138,8 @@ Instructions:
 2. Check for LICENSE file and identify license type.
 3. Inspect dependency files (requirements.txt, pyproject.toml, setup.py, DESCRIPTION, renv.lock) for restrictive licenses (GPL, AGPL, proprietary).
 4. Check version control: git log --oneline -5, look for git tags, check for semantic versioning.
-5. For Tier 2+: check for version pins in dependency files.
-6. For Tier 3: check if package is on PyPI/CRAN, look for CHANGELOG.
+5. For Tier 1 and 2: check for version pins in dependency files.
+6. For Tier 1: check if package is on PyPI/CRAN, look for CHANGELOG.
 7. Score each metric as an integer 0–10.
 
 Return ONLY a JSON object (no other text):
@@ -155,41 +167,72 @@ quality_raw    = sum(score * w for m, w in quality_weights.items()   if m in qua
 usability_raw  = sum(score * w for m, w in usability_weights.items() if m in usability_results) / sum(w for m, w in usability_weights.items() if m in usability_results)
 safety_raw     = sum(score * w for m, w in safety_weights.items()    if m in safety_results)    / sum(w for m, w in safety_weights.items()    if m in safety_results)
 
-overall_score = round(quality_raw * 40 + usability_raw * 40 + safety_raw * 20)
+# Category scores out of 100 (for the summary table)
+quality_score   = round(quality_raw   * 10)
+usability_score = round(usability_raw * 10)
+safety_score    = round(safety_raw    * 10)
+
+# Overall score: category weights are 40%, 40%, 20% of a 0-100 scale
+overall_score = round(quality_raw * 4 + usability_raw * 4 + safety_raw * 2)
 ```
 
 Set `failed: true` in the final JSON if either `quality.correct.failed` or `safety.compliant.failed` is true.
 
-## Step 5: Assemble Full JSON
+## Step 5: Assemble Full Results
 
 Construct the result object with this exact schema:
 
-```json
-{
-  "project": "<project_path>",
-  "tier": <tier>,
-  "overall_score": <0-100>,
-  "failed": <true|false>,
-  "quality": {
-    "correct":  {"score": <0-10>, "weight": 7, "reason": "..."},
-    "clear":    {"score": <0-10>, "weight": 2, "reason": "..."},
-    "concise":  {"score": <0-10>, "weight": 1, "reason": "..."}
-  },
-  "usability": {
-    "simple":     {"score": <0-10>, "weight": 3, "reason": "..."},
-    "powerful":   {"score": <0-10>, "weight": 2, "reason": "..."},
-    "performant": {"score": <0-10>, "weight": 2, "reason": "..."},
-    "documented": {"score": <0-10>, "weight": 2, "reason": "..."},
-    "accessible": {"score": <0-10>, "weight": 1, "reason": "..."}
-  },
-  "safety": {
-    "compliant":    {"score": <0-10>, "weight": 6, "reason": "..."},
-    "reproducible": {"score": <0-10>, "weight": 4, "reason": "..."}
-  }
-}
+```yaml
+project: <project_path>
+tier: <tier>
+overall_score: <0-100>
+failed: <true|false>
+quality:
+  correct:
+    score: <0-10>
+    weight: 7
+    reason: "..."
+  clear:
+    score: <0-10>
+    weight: 2
+    reason: "..."
+  concise:
+    score: <0-10>
+    weight: 1
+    reason: "..."
+usability:
+  simple:
+    score: <0-10>
+    weight: 3
+    reason: "..."
+  powerful:
+    score: <0-10>
+    weight: 2
+    reason: "..."
+  performant:
+    score: <0-10>
+    weight: 2
+    reason: "..."
+  documented:
+    score: <0-10>
+    weight: 2
+    reason: "..."
+  accessible:
+    score: <0-10>
+    weight: 1
+    reason: "..."
+safety:
+  compliant:
+    score: <0-10>
+    weight: 6
+    reason: "..."
+  reproducible:
+    score: <0-10>
+    weight: 4
+    reason: "..."
 ```
 
-Omit N/A metrics (Tier 1: `powerful`, `accessible`) from the usability object.
+Give N/A metrics (Tier 3: `powerful`, `accessible`) a score of 10.
 
 ## Step 6: Generate Recommendations
 
@@ -199,9 +242,13 @@ Before writing the file, synthesize 3–8 concrete, actionable recommendations r
 - Note if it is quick (minutes), medium (hours), or large (days) effort
 - Note if it cannot be automated (e.g., "Write a user guide" — human effort required)
 
-## Step 7: Write project_engineering_score.md
+## Step 7: Write engineering_score.md
 
-Write this file to the **project directory** (not the current working directory if different):
+Write this file to the **project directory** (not the current working directory if different).
+
+Before writing, compute the following:
+- **Date**: run `date +%Y-%m-%d` to get the current date.
+- **Time spent**: run `date +%s` to get `END_EPOCH`, then compute `END_EPOCH - START_EPOCH` (recorded in Step 0). Format as an integer number of seconds.
 
 ```markdown
 # Project Engineering Score
@@ -210,8 +257,30 @@ Write this file to the **project directory** (not the current working directory 
 **Tier**: <tier> (<tier name>)
 **Overall Score**: <overall_score>/100
 **Status**: <PASS or FAIL — FAIL if failed=true>
+**Date**: <YYYY-MM-DD>
+**Time spent**: <seconds>s
 
 ## Summary
+
+| Category | Score | Weight |
+| -- | -- | -- |
+| Quality | <quality_score>/100 | 40% |
+| Usability | <usability_score>/100 | 40% |
+| Safety | <safety_score>/100 | 20% |
+| **Total** | **<overall_score>/100** | 100% |
+
+| Metric | Score | Notes |
+| -- | -- | -- |
+| correct | <score>/10 | <brief reason> |
+| clear | <score>/10 | <brief reason> |
+| concise | <score>/10 | <brief reason> |
+| simple | <score>/10 | <brief reason> |
+| powerful | <score>/10 | <brief reason> |
+| performant | <score>/10 | <brief reason> |
+| documented | <score>/10 | <brief reason> |
+| accessible | <score>/10 | <brief reason> |
+| compliant | <score>/10 | <brief reason> |
+| reproducible | <score>/10 | <brief reason> |
 
 <2–4 sentences plain-language summary. Mention the strongest areas and the biggest gaps.
 If failed=true, clearly state which metric caused the failure and why.>
@@ -224,13 +293,14 @@ If failed=true, clearly state which metric caused the failure and why.>
 
 ## Full Results
 
-```json
-<the assembled JSON, indented 2 spaces>
+```yaml
+<the assembled YAML>
 ```
 ```
 
 ## Notes
 
+- **Skip large and binary files**: Do not read files larger than 100 KB, or files with extensions `.csv`, `.pdf`, `.png`, `.jpg`, `.jpeg`, `.gif`, `.bmp`, `.svg`, `.ico`, `.tiff`, `.webp`. These are too large or not human-readable source code.
 - If the project is very large, focus on a representative sample: main source files, entry points, README, tests, and CI config.
 - For R projects: look for `DESCRIPTION`, `R/`, `tests/testthat/`, `vignettes/`, `man/` directories.
 - For Python projects: look for `pyproject.toml`, `setup.py`, `src/`, `tests/`, `.github/`.

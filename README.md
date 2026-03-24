@@ -5,8 +5,9 @@ This repository contains AI agents, skills, and tools for working with [Starsim]
 
 ## Plugins
 
-This repo contains two Claude Code plugins, installable via the built-in marketplace:
+This repo contains three Claude Code plugins, installable via the built-in marketplace:
 
+- **project-improver** (`plugins/project-improver/`) — Check a project against engineering quality guidelines, and make improvements
 - **starsim-ai** (`plugins/starsim/`) — Starsim and Sciris MCP tools and modeling skills
 - **disease-modeling** (`plugins/disease_modeling/`) — General disease modeling skills and tools
 
