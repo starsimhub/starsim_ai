@@ -325,6 +325,10 @@ sim = ss.Sim(demographics=[
 ])
 ```
 
+### 12. Pregnancy loss, neonatal death classification, and FetalHealth
+
+`ss.Pregnancy` supports pregnancy loss classification (miscarriage vs stillbirth by gestational age), preterm birth detection, and passive neonatal death tracking. `ss.FetalHealth` adds birth weight and growth restriction modeling as a custom module. See `starsim_examples/mnch/` for complete working examples and the [starsim pregnancy docs](https://docs.starsim.org) for API details.
+
 ## Quick reference
 
 | Task | Code |
@@ -342,3 +346,7 @@ sim = ss.Sim(demographics=[
 | Maternal mortality | `ss.Pregnancy(p_maternal_death=ss.bernoulli(0.001))` |
 | Breastfeeding duration | `ss.Pregnancy(dur_breastfeed=ss.lognorm_ex(mean=ss.years(0.5), std=ss.years(0.25)))` |
 | Fertility scaling factor | `ss.Pregnancy(rel_fertility=1000)` -- set to 1000 if data are per 1000 women |
+| Background pregnancy loss | `ss.Pregnancy(p_loss=ss.bernoulli(p=0.005))` |
+| Loss classification threshold | `ss.Pregnancy(loss_threshold=ss.weeks(20))` |
+| Preterm threshold | `ss.Pregnancy(preterm_threshold=ss.weeks(37))` |
+| Fetal health tracking | `ss.Sim(custom=ss.FetalHealth(), networks=ss.PrenatalNet())` |

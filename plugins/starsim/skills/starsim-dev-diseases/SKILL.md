@@ -366,6 +366,10 @@ sim.plot('gonorrhea')
 
 Connectors are placed in the `diseases` list (or wherever ordering makes sense for the simulation step order). They are generic `ss.Module` instances, not disease subclasses. The connector's `step()` runs each timestep and can read or modify any disease state on any agent.
 
+### Pattern 9: Congenital outcomes via mother-to-child transmission
+
+The base `Infection` class provides a generic framework for congenital outcomes. Diseases opt in by defining `birth_outcome_keys` and `birth_outcomes` in pars, then calling `self.set_congenital()` at infection time. See `starsim_examples/mnch/` for complete working examples and the [starsim pregnancy docs](https://docs.starsim.org) for API details.
+
 ### Accessing results
 
 After running a simulation, disease results are available via two equivalent paths:

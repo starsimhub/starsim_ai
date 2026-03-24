@@ -192,6 +192,26 @@ raw_result = sim.people.age.raw[idx]     # Agent with UID 5
 
 Pick one indexing approach and use it consistently. Prefer the Starsim array methods (`.mean()`, indexing with `ss.uids()`) over direct NumPy access to `.raw` or `.values`. Code that works correctly with no deaths will silently break once deaths occur if it conflates positional and UID-based indexing.
 
+### Do not wrap starsim array indexing results in np.asarray
+
+When you index a starsim `Arr` with UIDs or a boolean mask, the result already works with numpy operations, boolean logic, and matplotlib. Wrapping in `np.asarray(..., dtype=bool)` or similar is unnecessary noise.
+
+```python
+# WRONG — unnecessary wrapping
+is_ptb = np.asarray(preg.preterm[newborn_uids], dtype=bool)
+is_lbw = np.asarray(fh.lbw[newborn_uids], dtype=bool)
+
+# RIGHT — just use the result directly
+is_ptb = preg.preterm[newborn_uids]
+is_lbw = fh.lbw[newborn_uids]
+
+# These already support boolean ops, sum, plotting, etc.
+n_both = (is_ptb & is_lbw).sum()
+plt.hist(fh.birth_weight[mask], bins=30)
+```
+
+Also note: indexing an `Arr` with UIDs (e.g., `arr[uids]`) returns a plain numpy array, not an `Arr` — so calling `.values` on the result will fail. Just use the result directly.
+
 ### Do not forget to check if UID arrays are empty
 
 ```python

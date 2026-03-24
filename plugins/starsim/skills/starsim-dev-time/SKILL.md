@@ -269,6 +269,22 @@ print(ss.prob(0.1) * 2)  # ~ss.prob(0.19), NOT 0.2
 
 The underlying math: multiply the rate by the scalar, then convert back to probability. For `ss.prob(0.5) * 2`: rate = `-log(1 - 0.5) = 0.693`, doubled = `1.386`, new prob = `1 - exp(-1.386) = 0.75`.
 
+### Converting agent ages or durations between units
+
+Duration objects work with arrays, so always use the starsim time API instead of manual conversion factors like `* 365.25`:
+
+```python
+# WRONG — manual conversion, fragile
+age_days = sim.people.age[uids] * 365.25
+
+# RIGHT — starsim time API, works with scalars and arrays
+age_days = ss.years(sim.people.age[uids]).days
+
+# Other conversions
+ga_weeks = ss.years(duration_in_years).weeks
+months = ss.days(n_days).months
+```
+
 ## Anti-patterns
 
 ### CRITICAL: `plt.axvline(2015)` with date axes
