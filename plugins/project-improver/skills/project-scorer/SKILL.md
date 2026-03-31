@@ -7,7 +7,7 @@ allowed-tools: Read, Glob, Grep, Bash, Write, Agent, WebFetch
 
 Score a software project against the IDM engineering quality guidelines and write an `engineering_score.md` report.
 
-Skill version: v1.1_2026.03.23
+Skill version: v1.2_2026.03.31
 
 ## Step 0: Record Start Time
 

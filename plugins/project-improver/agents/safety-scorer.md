@@ -74,17 +74,9 @@ Also check for `.env` files with secrets, `config.py` with credentials, or AWS/A
 
 ### 2. Assess reproducibility (safety.reproducible)
 
-**Check version control**:
-```bash
-cd <project> && git log --oneline -10 2>/dev/null || echo "No git repo"
-git tag -l 2>/dev/null | tail -10
-```
-- Is there a git repo? Commits? Tags?
-- For Tier 1 and 2: are there semantic version tags (v1.0.0, v2.3.1)?
-
-**Check dependency specification**:
-- `requirements.txt`: are versions pinned or bounded? (`numpy>=1.20`, `numpy==1.24.3`)
+**Check dependency specification** (all tiers):
 - `pyproject.toml`: check `[project] dependencies` for version specs
+- `requirements.txt`: are versions pinned or bounded? (`numpy>=1.20`, `numpy==1.24.3`)
 - `setup.py`: check `install_requires`
 - R: check `DESCRIPTION` Imports/Depends, `renv.lock`
 
@@ -92,9 +84,17 @@ git tag -l 2>/dev/null | tail -10
 - Python: `poetry.lock`, `uv.lock`, `Pipfile.lock`, `requirements-lock.txt`
 - R: `renv.lock`
 
-**Check random seed handling** (for simulation/ML code):
+**Check random seed handling** (all tiers, for simulation/ML code):
 - Look for `np.random.seed()`, `random.seed()`, `set.seed()` — are seeds documented or configurable?
-- Check if different seeds produce reproducibly different (but deterministic) results
+- Check if the same seeds give numerically identical results (where possible)
+
+**Check version control** (for Tier 1 and 2):
+```bash
+cd <project> && git log --oneline -10 2>/dev/null || echo "No git repo"
+git tag -l 2>/dev/null | tail -10
+```
+- Is there a git repo? Commits? Tags?
+- Are there semantic version tags (v1.0.0, v2.3.1)?
 
 **Check for PyPI/CRAN publication** (for Tier 1):
 - Look for `pyproject.toml` with `[build-system]` or `setup.cfg`
@@ -112,9 +112,9 @@ Use the rubric provided in your prompt. If no explicit rubric is given, use thes
 - 10: Fully compliant: permissive license, no secrets, no restrictive deps
 
 **reproducible** (weight: 4):
-- 0: Key files not in version control
-- 5: Files versioned but deps undocumented
-- 10: Full reproducibility stack (semver, published, pinned deps, lock file, deterministic seeds)
+- 0: No dependency management or version control
+- 5: Dependencies specified but not pinned; no versioning
+- 10: Full reproducibility stack (pinned deps, deterministic seeds, semver, published on PyPI/CRAN)
 
 ## Output Format
 

@@ -54,8 +54,11 @@ Work through these steps systematically:
 - Check for "magic numbers": unexplained numeric constants in the code that should be documented with a source (e.g., a rate constant of `0.0037` with no comment or citation)
 - **For Tier 1 and 2**: find test files (`test_*.py`, `*_test.py`, `tests/`, `testthat/`)
   - Estimate coverage breadth: do tests cover main functionality? edge cases?
+  - Check if tests are clear and readable enough to double as documentation
   - Run `find <project> -name "*.py" | xargs grep -l "def test_" 2>/dev/null | wc -l` to count test files
 - **For Tier 1**: look for CI/CD (`.github/workflows/`, `.travis.yml`, `tox.ini`)
+- **For Tier 1**: check whether the code is hard to misuse — does correct usage happen to be the easiest path? Does incorrect usage raise warnings?
+- Check for evidence of peer review or validation (e.g., references to published papers, review comments, validation scripts)
 - **Failure condition**: if you find serious bugs that affect scientific validity (e.g., wrong model equations, data corruption, undefined behavior that would produce incorrect results), set `failed: true` and `score: 0`
 
 ### 3. Assess clarity (quality.clear)
@@ -79,7 +82,7 @@ Use the rubric provided in your prompt. If no explicit rubric is given, use thes
 **correct** (weight: 7):
 - 0: Obvious bugs or scientifically wrong results; FAIL
 - 5: Appears to work but untested
-- 10: Correct, validated, comprehensive CI-tested coverage
+- 10: Correct, validated, comprehensive CI-tested coverage; tests double as docs; peer-reviewed; hard to misuse
 
 **clear** (weight: 2):
 - 0: Unreadable, confusing names, no structure
