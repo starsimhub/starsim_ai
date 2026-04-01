@@ -7,7 +7,7 @@ allowed-tools: Read, Glob, Grep, Bash, Write, Edit
 
 Read recommendations from `engineering_score.md` and implement prioritized improvements to the project.
 
-Skill version: v1.2_2026.03.31
+Skill version: 1.2_2026.03.31
 
 ## Step 1: Find and Read the Score Report
 
