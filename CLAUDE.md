@@ -31,6 +31,8 @@ When updating a plugin's version in its `plugin.json`, also update the correspon
 | disease-modeling  | `plugins/disease_modeling/.claude-plugin/plugin.json`  |
 | project-improver  | `plugins/project-improver/.claude-plugin/plugin.json` |
 
+The version number is also often listed in `SKILL.md` and `CHANGELOG.md`. Make sure these are updated too.
+
 ## Tooling
 
 - **Package manager**: `uv` (used for all Python execution via `uv run`)
