@@ -65,6 +65,7 @@ Explore the project and score each non-N/A metric as an integer from 0–10.
   - R: `for` loops that could use `apply` family, `dplyr`, or vectorized operations
   - Any O(n²) or worse algorithms where O(n log n) or O(n) would clearly work
 - Look for profiling infrastructure (`cProfile`, `line_profiler`, `profvis`)
+- Look for performance tests and benchmarks in the test suite
 - Check if the code uses appropriate data structures (e.g., dict vs list for lookups)
 - For simulation code: check if inner loops are vectorized
 - For Tier 1 and 2: check if slow (>30s), frequently-run, embarrassingly parallel tasks have a parallelization option (e.g., `multiprocessing`, `joblib`, or similar)
@@ -72,11 +73,10 @@ Explore the project and score each non-N/A metric as an integer from 0–10.
 ### 4. Assess documentation (usability.documented)
 - Check if it is clear what UIs (scripts/classes/functions) the user is supposed to interact with
 - Find and read all README files; check that the main readme explains purpose, installation, basic usage, and project structure
-- Count functions/classes with docstrings vs without (sample 10–20 public functions)
-- Check docstring quality: do they explain what the function does, its parameters, and return value? Do they include runnable examples?
+- Check docstring coverage on **major** classes and functions (not every utility method needs one); do they include runnable examples?
 - Look for `docs/`, `vignettes/`, `notebooks/`, `tutorials/` directories
 - Check if docs are meaningful to users of different expertise levels (non-technical intro, user info, contributor info)
-- For Tier 1 and 2: check for detailed readmes (and/or a readme in each folder), interactive tutorials, and a user guide
+- For Tier 1 and 2: check for detailed readmes (and/or a readme in each folder), interactive tutorials, and a **comprehensive** user guide (covers typical workflows in depth)
 - For Tier 1: check whether tradeoffs between multiple approaches are documented
 
 ### 5. Assess accessibility (usability.accessible) — skip if Tier 3
@@ -91,32 +91,40 @@ Explore the project and score each non-N/A metric as an integer from 0–10.
 
 ## Scoring
 
+**General scoring principle**: If you cannot identify specific improvements for a metric, score 10/10. If scoring below 10, always list the specific improvements that would raise the score in your reason. Don't dock points for theoretical issues — only for concrete, observable problems.
+
 Use the rubric provided in your prompt. If no explicit rubric is given, use these defaults:
 
 **simple** (weight: 3):
 - 0: Unclear how to use; no obvious entry point
 - 5: Common cases work but require setup
-- 10: Intuitive UIs, great error messages, one-liner common workflows
+- 7: Clean UIs with sensible defaults, good error messages
+- 10: No specific improvements identifiable; intuitive UIs, great errors, one-liner common workflows
 
 **powerful** (weight: 2, N/A for Tier 3):
 - 0: Completely hardcoded
 - 5: Some configurability
-- 10: All assumptions modifiable; easily composed/subclassed
+- 7: Most use cases covered; classes easily composed or subclassed
+- 10: No specific improvements identifiable; all assumptions modifiable; easily composed/subclassed
 
 **performant** (weight: 2):
 - 0: Major inefficiencies that waste significant time
-- 5: Some inefficiencies but mostly acceptable
-- 10: Appropriate algorithms; profiled and optimized; slow frequently-run tasks parallelizable
+- 5: Some notable inefficiencies
+- 7: Appropriate algorithms, no major inefficiencies, but no performance tests
+- 9: Well-optimized with performance tests/benchmarks; vectorized; parallelization available; only very minor issues
+- 10: No specific improvements identifiable; profiled, optimized, slow frequently-run tasks parallelized
 
 **documented** (weight: 2):
 - 0: No docs; unclear what UIs to use
 - 5: README only
-- 10: Clear what UIs to use; READMEs + full docstrings with runnable examples + tutorial(s) + user guide
+- 8: Readmes, docstrings on major classes, tutorials; user guide present but not comprehensive
+- 10: Clear UIs; READMEs + docstrings on major classes with runnable examples + tutorials + comprehensive user guide
 
 **accessible** (weight: 1, N/A for Tier 3):
 - 0: Not public
 - 5: Public but missing license or key files
-- 10: All key files, easy install, community support, AI-optimized (Tier 1)
+- 9: All files, easy install, community support
+- 10: No specific improvements identifiable; all files, easy install, community support, AI-optimized (Tier 1)
 
 ## Output Format
 

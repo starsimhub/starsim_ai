@@ -71,28 +71,36 @@ Work through these steps systematically:
 
 ### 4. Assess conciseness (quality.concise)
 - Look for copy-pasted code blocks (near-duplicate functions or files)
-- Check if external libraries are used where appropriate (e.g., numpy instead of hand-rolled loops)
+- Check if external libraries are used where appropriate (e.g., numpy instead of hand-rolled loops), but don't penalize for not pulling in heavy deps for trivial savings
 - Look for obviously redundant code (dead code, repeated logic)
-- **For Tier 1**: check for a linter in CI
+- Check if a linter config exists (`.flake8`, `pyproject.toml [tool.ruff]`, `.lintr`); note presence but do not require linting in CI
 
 ## Scoring
+
+**General scoring principle**: If you cannot identify specific improvements for a metric, score 10/10. If scoring below 10, always list the specific improvements that would raise the score in your reason. Don't dock points for theoretical issues — only for concrete, observable problems.
 
 Use the rubric provided in your prompt. If no explicit rubric is given, use these defaults:
 
 **correct** (weight: 7):
 - 0: Obvious bugs or scientifically wrong results; FAIL
-- 5: Appears to work but untested
-- 10: Correct, validated, comprehensive CI-tested coverage; tests double as docs; peer-reviewed; hard to misuse
+- 5: Tests present but limited coverage
+- 7: Good tests covering main workflows, but no CI/CD or limited peer review
+- 8: Good tests with CI/CD, active peer review, cited in publications; minor coverage gaps or bugs
+- 10: Comprehensive tests with CI/CD; peer-reviewed; no magic numbers; hard to misuse; no known bugs
 
 **clear** (weight: 2):
 - 0: Unreadable, confusing names, no structure
-- 5: Readable but poorly organized
-- 10: Perfect modularity, full docstrings, style-compliant
+- 5: Good structure but sparse docstrings
+- 7: Good structure with docstrings on most functions, but incomplete coverage
+- 9: Well-organized modular structure, comprehensive docstrings, consistent naming; only minor gaps
+- 10: Perfect modularity, full docstrings on all public APIs, style-compliant
 
 **concise** (weight: 1):
 - 0: Extensive copy-paste duplication
-- 5: Some duplication or missed library usage
-- 10: No unnecessary code, style guide followed
+- 5: Some simplifications possible; inappropriate library use
+- 7: Mostly concise with some avoidable duplication
+- 9: Limited avoidable duplication, good library use
+- 10: No avoidable duplication, style guide compliant
 
 ## Output Format
 

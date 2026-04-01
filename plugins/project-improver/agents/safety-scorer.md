@@ -79,8 +79,10 @@ Also check for `.env` files with secrets, `config.py` with credentials, or AWS/A
 - `requirements.txt`: are versions pinned or bounded? (`numpy>=1.20`, `numpy==1.24.3`)
 - `setup.py`: check `install_requires`
 - R: check `DESCRIPTION` Imports/Depends, `renv.lock`
+- **For Tier 1 (library code)**: dependencies should be specified but version pins (>=) are optional — libraries typically use loose bounds. Do not penalize for missing pins.
+- **For Tier 2 and 3 (research/non-library code)**: pinned versions, environment files, or lock files are expected when reproducibility matters.
 
-**Check for lock files** (for Tier 1 and 2):
+**Check for lock files** (for Tier 2 and 3 research code):
 - Python: `poetry.lock`, `uv.lock`, `Pipfile.lock`, `requirements-lock.txt`
 - R: `renv.lock`
 
@@ -103,6 +105,8 @@ git tag -l 2>/dev/null | tail -10
 
 ## Scoring
 
+**General scoring principle**: If you cannot identify specific improvements for a metric, score 10/10. If scoring below 10, always list the specific improvements that would raise the score in your reason. Don't dock points for theoretical issues — only for concrete, observable problems.
+
 Use the rubric provided in your prompt. If no explicit rubric is given, use these defaults:
 
 **compliant** (weight: 6, fail_on_serious: true):
@@ -113,8 +117,10 @@ Use the rubric provided in your prompt. If no explicit rubric is given, use thes
 
 **reproducible** (weight: 4):
 - 0: No dependency management or version control
-- 5: Dependencies specified but not pinned; no versioning
-- 10: Full reproducibility stack (pinned deps, deterministic seeds, semver, published on PyPI/CRAN)
+- 5: Dependencies specified but no semantic versioning
+- 7: Dependencies specified, deterministic seeds, semver with git tags, but not published
+- 9: Semver + git tags, published on PyPI/CRAN, dependencies specified, deterministic seeds
+- 10: Full stack: deps specified, deterministic seeds, semver + git tags, published; version pins on key deps
 
 ## Output Format
 

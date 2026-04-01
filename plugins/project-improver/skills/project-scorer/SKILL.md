@@ -303,6 +303,7 @@ If failed=true, clearly state which metric caused the failure and why.>
 
 ## Notes
 
+- **General scoring principle**: If no specific improvements can be identified for a metric, score 10/10. If scoring below 10, always list the specific improvements that would raise the score. Don't dock points for theoretical issues — only for concrete, observable problems.
 - **Skip large and binary files**: Do not read files larger than 100 KB, or files with extensions `.csv`, `.pdf`, `.png`, `.jpg`, `.jpeg`, `.gif`, `.bmp`, `.svg`, `.ico`, `.tiff`, `.webp`. These are too large or not human-readable source code.
 - If the project is very large, focus on a representative sample: main source files, entry points, README, tests, and CI config.
 - For R projects: look for `DESCRIPTION`, `R/`, `tests/testthat/`, `vignettes/`, `man/` directories.

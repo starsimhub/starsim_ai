@@ -38,25 +38,28 @@ tier1:
       rubric:
         0:  "Obvious bugs affecting scientific validity"
         3:  "Appears to work but no tests"
-        5:  "Tests present but <60% coverage; magic numbers present"
-        7:  "Good tests (>80% coverage) that double as documentation, but no CI/CD pipeline or peer review"
-        10: "Comprehensive tests with CI/CD; tests double as documentation; peer-reviewed; no magic numbers; code is hard to misuse"
+        5:  "Tests present but limited coverage; magic numbers present"
+        7:  "Good tests covering main workflows, but no CI/CD pipeline or limited peer review"
+        8:  "Good tests with CI/CD, active peer review, cited in publications; minor coverage gaps or bugs remain"
+        10: "Comprehensive tests with CI/CD; tests double as documentation; peer-reviewed; no magic numbers; code is hard to misuse; no known bugs"
     clear:
       description: "Sensible modular structure with full docstrings and style guide compliance"
       rubric:
         0:  "No discernible structure, confusing names, unreadable code"
         3:  "Readable but poorly organized; clever or dense constructs"
-        5:  "Good structure but sparse comments and docstrings"
-        7:  "Good structure and docstrings, occasional style violations"
-        10: "Perfect modularity, descriptive names, full docstrings, no style violations, linter clean; abstractions only where they reduce complexity"
+        5:  "Good file/folder structure but sparse comments and docstrings"
+        7:  "Good structure with docstrings on most functions, but incomplete coverage or occasional style violations"
+        9:  "Well-organized modular structure, comprehensive docstrings, consistent naming conventions; only minor gaps"
+        10: "Perfect modularity, descriptive names, full docstrings on all public APIs, no style violations; abstractions only where they reduce complexity"
     concise:
-      description: "Efficient code without compromising clarity; style guide with linting; appropriate library use; minimal duplication"
+      description: "Efficient code without compromising clarity; appropriate library use; minimal duplication"
       rubric:
         0:  "Severe duplication and pervasive style guide violations"
-        3:  "Duplication present, style violations throughout"
-        5:  "Some simplifications possible, occasional style violations; large deps introduced for trivial savings"
-        7:  "Mostly follows style guide, minor issues, linter mostly clean"
-        10: "Perfectly concise, style guide compliant, linter clean, appropriate library use without unnecessary heavy deps"
+        3:  "Significant duplication, style violations throughout"
+        5:  "Some simplifications possible; large deps introduced for trivial savings"
+        7:  "Mostly concise with some avoidable duplication"
+        9:  "Limited avoidable duplication, good library use, mostly style-compliant"
+        10: "No avoidable duplication, style guide compliant, appropriate library use without unnecessary heavy deps"
 
   usability:
     simple:
@@ -66,7 +69,7 @@ tier1:
         3:  "Basic usage possible but many sharp edges and missing defaults"
         5:  "Common workflows work but poor validation and error messages"
         7:  "Clean UIs with sensible defaults, validated, good error messages"
-        10: "Intuitive UIs, self-documenting, great errors, common workflows are one-liners; correct usage is also the easiest"
+        10: "No specific improvements identifiable; intuitive UIs, great errors, common workflows are one-liners"
     powerful:
       description: "UIs flexible and adaptable; all assumptions modifiable; classes composable and subclassable"
       rubric:
@@ -74,32 +77,34 @@ tier1:
         3:  "Minor configuration options only"
         5:  "Most common variations supported"
         7:  "Most use cases covered; classes easily composed or subclassed"
-        10: "All assumptions modifiable; easily composed/subclassed with minimal interdependencies; edge cases handled"
+        10: "No specific improvements identifiable; all assumptions modifiable; easily composed/subclassed"
     performant:
-      description: "Appropriate algorithms; profiled and optimized; slow frequently-run tasks parallelizable"
+      description: "Appropriate algorithms; performance tested; slow frequently-run tasks parallelizable"
       rubric:
         0:  "Wrong algorithms for the task; 10x+ slower than reasonable"
         3:  "Major algorithmic inefficiencies (wrong data structures, unnecessary loops)"
-        5:  "Mostly performant with some minor issues"
-        7:  "Well-optimized, appropriate algorithms, no obvious inefficiencies"
-        10: "Profiled, optimized critical paths, no regressions; slow (>30s) frequently-run tasks can be parallelized"
+        5:  "Mostly performant with some notable issues"
+        7:  "Appropriate algorithms, no major inefficiencies, but no performance tests or benchmarking"
+        9:  "Well-optimized with performance tests/benchmarks; vectorized critical paths; parallelization available; only very minor issues"
+        10: "No specific improvements identifiable; profiled, optimized critical paths, no regressions; slow frequently-run tasks parallelized"
     documented:
-      description: "Clear what UIs to interact with; readmes, full docstrings with runnable examples, tutorials, user guide"
+      description: "Clear what UIs to interact with; readmes, docstrings with examples on major classes, tutorials, comprehensive user guide"
       rubric:
         0:  "No documentation of any kind"
         2:  "Readme only, no docstrings; unclear what UIs to use"
         4:  "Readme and some docstrings; UIs identifiable"
-        6:  "Good readme, full public API docstrings with examples, no tutorial"
-        8:  "Readmes, full docstrings, at least one tutorial; docs for multiple expertise levels"
-        10: "Readmes in each folder, docstrings with runnable examples, tutorials, user guide; docs cover tradeoffs between approaches"
+        6:  "Good readme, docstrings on major classes with examples, no tutorial"
+        8:  "Readmes, docstrings on major classes, tutorials; user guide present but not comprehensive"
+        10: "Readmes in each folder, docstrings on major classes with runnable examples, tutorials, comprehensive user guide; docs cover tradeoffs"
     accessible:
       description: "Public repo with all key files, easy installation, community support, AI-optimized"
       rubric:
         0:  "Not publicly available"
         2:  "Public but hard to install or no license"
         5:  "Installable, has license, but missing key files (changelog, contributing guide)"
-        7:  "All key files present (license, changelog), easy 1-3 command installation, community support"
-        10: "All files, 1-3 command install, community support, AI-optimized (skills/MCP)"
+        7:  "All key files present (license, changelog), easy 1-3 command installation"
+        9:  "All files, 1-3 command install, community support"
+        10: "No specific improvements identifiable; all files, easy install, community support, AI-optimized (skills/MCP)"
 
   safety:
     compliant:
@@ -111,14 +116,14 @@ tier1:
         7:  "Fully compliant but missing secondary files (changelog, contributing guide)"
         10: "MIT (or equivalent) license, no secrets, no restrictive deps, all key community files present"
     reproducible:
-      description: "Dependencies specified and pinned; deterministic seeds; semantic versioning; PyPI/CRAN published"
+      description: "Dependencies specified (in pyproject.toml/DESCRIPTION); deterministic seeds; semantic versioning; PyPI/CRAN published"
       rubric:
         0:  "No dependency management or version control"
         2:  "Git used but dependencies undocumented"
-        4:  "Dependencies specified (pyproject.toml/DESCRIPTION) but not pinned; no semantic versioning"
-        6:  "Dependencies pinned, deterministic seeds, semantic versioning with git tags, but not published"
-        8:  "Semver + git tags, published on PyPI/CRAN, dependencies pinned (>=), deterministic seeds"
-        10: "Full stack: pinned deps, deterministic seeds, semver + git tags, published on PyPI/CRAN, optional lock file"
+        5:  "Dependencies specified (pyproject.toml/DESCRIPTION) but no semantic versioning"
+        7:  "Dependencies specified, deterministic seeds, semantic versioning with git tags, but not published"
+        9:  "Semver + git tags, published on PyPI/CRAN, dependencies specified in pyproject.toml/DESCRIPTION, deterministic seeds"
+        10: "Full stack: deps specified, deterministic seeds, semver + git tags, published on PyPI/CRAN; version pins (>=) on key deps"
 
 # ─── TIER 2: Small-scale project ──────────────────────────────────────────────
 tier2:
