@@ -25,7 +25,7 @@
       "name": "project-improver",
       "source": "./plugins/project-improver",
       "description": "Score and improve scientific research code quality, usability, and safety against IDM engineering quality tiers",
-      "version": "v1.2_2026.03.31",
+      "version": "1.2_2026.03.31",
       "keywords": ["quality", "scoring", "scientific", "python", "r", "engineering"]
     }
   ]
