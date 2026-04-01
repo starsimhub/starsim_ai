@@ -11,7 +11,7 @@
       "name": "starsim-ai",
       "source": "./plugins/starsim",
       "description": "Starsim and Sciris MCP tools and modeling skills",
-      "version": "0.2.0",
+      "version": "1.2_2026.02.25",
       "keywords": ["starsim", "sciris", "disease-modeling", "epidemiology"]
     },
     {
@@ -25,7 +25,7 @@
       "name": "project-improver",
       "source": "./plugins/project-improver",
       "description": "Score and improve scientific research code quality, usability, and safety against IDM engineering quality tiers",
-      "version": "0.1.0",
+      "version": "1.2_2026.03.31",
       "keywords": ["quality", "scoring", "scientific", "python", "r", "engineering"]
     }
   ]

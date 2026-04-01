@@ -17,46 +17,21 @@ Starsim documentation is also available on Context7: https://context7.com/starsi
 - `.github/workflows/main.yml` - CI/CD pipeline that deploys MCP servers to a remote VM via SSH.
 - `internal/` - Scripts used for creating the AI tools (not user-facing).
 
-## MCP Servers
+## MCP Servers (legacy)
 
-Two MCP servers are deployed, both using SSE transport:
+Two MCP servers (starsim on port 8001, sciris on port 8002) are deployed via `deploy_mcp_pack/` using SSE transport at `http://mcp.starsim.org:{port}`. Deploy locally with `cd deploy_mcp_pack && uv run python deploy`. CI/CD (`.github/workflows/main.yml`) deploys to a remote VM on push to `test` or manual dispatch.
 
-| Library  | Port | GitHub Repo                              |
-|----------|------|------------------------------------------|
-| starsim  | 8001 | https://github.com/starsimhub/starsim    |
-| sciris   | 8002 | https://github.com/sciris/sciris          |
+## Versioning
 
-Public endpoints: `http://mcp.starsim.org:{port}`
+When updating a plugin's version in its `plugin.json`, also update the corresponding `version` field in `.claude-plugin/marketplace.json` to match. The marketplace lists all plugins and their versions must stay in sync with the individual plugin definitions:
 
-## Key Commands
+| Plugin            | plugin.json location                                  |
+|-------------------|-------------------------------------------------------|
+| starsim-ai        | `plugins/starsim/.claude-plugin/plugin.json`          |
+| disease-modeling  | `plugins/disease_modeling/.claude-plugin/plugin.json`  |
+| project-improver  | `plugins/project-improver/.claude-plugin/plugin.json` |
 
-### Deploy MCP servers locally
-```bash
-cd deploy_mcp_pack && uv run python deploy
-```
-This creates documentation databases from the GitHub repos then starts both servers in the background.
-
-### Monitor running servers
-```bash
-tail -f deploy_mcp_pack/starsim.log
-tail -f deploy_mcp_pack/sciris.log
-ps -p $(cat deploy_mcp_pack/server_pids.txt | cut -d: -f2)
-```
-
-### Stop servers
-```bash
-kill $(cat deploy_mcp_pack/server_pids.txt | cut -d: -f2)
-```
-
-### Add MCP servers to Claude Code
-```bash
-claude mcp add --transport sse starsim http://mcp.starsim.org:8001/sse
-claude mcp add --transport sse sciris http://mcp.starsim.org:8002/sse
-```
-
-## CI/CD
-
-The GitHub Actions workflow (`.github/workflows/main.yml`) triggers on push to `test` branch or manual dispatch. It SSHs into a remote VM, pulls the specified branch of `mcp-pack`, recreates databases, and restarts both MCP servers. Required secrets: `SSH_KEY`, `VM_USER`, `VM_HOST`, `GITHUB_TOKEN`, `OPENAI_API_KEY`.
+The version number is also often listed in `SKILL.md` and `CHANGELOG.md`. Make sure these are updated too.
 
 ## Tooling
 

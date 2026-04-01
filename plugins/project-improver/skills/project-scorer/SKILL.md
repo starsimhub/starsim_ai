@@ -7,7 +7,7 @@ allowed-tools: Read, Glob, Grep, Bash, Write, Agent, WebFetch
 
 Score a software project against the IDM engineering quality guidelines and write an `engineering_score.md` report.
 
-Skill version: v1.1_2026.03.23
+Skill version: 1.2_2026.03.31
 
 ## Step 0: Record Start Time
 
@@ -67,10 +67,11 @@ Tier <tier> rubric for quality (from IDM scoring schema):
 Instructions:
 1. Explore the project: read key source files, check for tests, inspect structure, naming, docstrings, code organization, duplication. Determine the main programming language(s) used.
 2. Run e.g. `find <project> -name "*.py"` to discover files for a project in Python.
-3. Check for test files: look for test_*.py, *_test.py, tests/ directory, testthat/ for R.
+3. Check for test files: look for test_*.py, *_test.py, tests/ directory, testthat/ for R. Check if tests are clear enough to double as documentation.
 4. For Tier 1: check for CI/CD config (.github/workflows/, .travis.yml, etc.).
-5. Look for obvious bugs, scientific errors, or suspicious logic.
-6. Score each metric as an integer 0–10.
+5. For Tier 1: check whether code is hard to misuse (correct usage is easiest; incorrect usage raises warnings).
+6. Look for obvious bugs, scientific errors, or suspicious logic. Check for evidence of peer review or validation.
+7. Score each metric as an integer 0–10.
 
 Return ONLY a JSON object (no other text):
 {
@@ -101,11 +102,12 @@ Tier <tier> rubric for usability (from IDM scoring schema):
 <paste the tier's usability rubric from the schema here>
 
 Instructions:
-1. Explore the project: read README files, check for tutorials/docs, inspect public APIs (main entry points, function signatures, defaults), look for error handling.
-2. Check for docstrings on public functions/classes.
-3. Check for obvious performance anti-patterns (nested loops over large arrays, no vectorization).
-4. For accessible: look for LICENSE file, check if repo is public, check setup.py/pyproject.toml/DESCRIPTION for installability.
-5. Score each non-N/A metric as an integer 0–10. Omit N/A metrics entirely.
+1. Explore the project: read README files, check for tutorials/docs, inspect public UIs (scripts/classes/functions — main entry points, function signatures, defaults), look for error handling.
+2. Check if it is clear what UIs the user is supposed to interact with.
+3. Check for docstrings on public functions/classes — do they include runnable examples?
+4. Check for obvious performance anti-patterns (nested loops over large arrays, no vectorization). Check if algorithms are appropriate for their tasks.
+5. For accessible: check if code is on GitHub (public if possible), look for LICENSE file, check setup.py/pyproject.toml/DESCRIPTION for installability.
+6. Score each non-N/A metric as an integer 0–10. Omit N/A metrics entirely.
 
 Return ONLY a JSON object (no other text). Include only non-N/A metrics:
 {
@@ -136,11 +138,12 @@ Tier <tier> rubric for safety (from IDM scoring schema):
 Instructions:
 1. Check for exposed secrets: scan for .env files, hardcoded API keys/tokens/passwords using grep patterns like (api_key|secret|password|token)\s*=\s*['\"][^'"]{8,}.
 2. Check for LICENSE file and identify license type.
-3. Inspect dependency files (requirements.txt, pyproject.toml, setup.py, DESCRIPTION, renv.lock) for restrictive licenses (GPL, AGPL, proprietary).
-4. Check version control: git log --oneline -5, look for git tags, check for semantic versioning.
-5. For Tier 1 and 2: check for version pins in dependency files.
-6. For Tier 1: check if package is on PyPI/CRAN, look for CHANGELOG.
-7. Score each metric as an integer 0–10.
+3. Inspect dependency files (pyproject.toml, DESCRIPTION, requirements.txt, setup.py, renv.lock) for restrictive licenses (GPL, AGPL, proprietary).
+4. Check dependency specification: are dependencies specified in pyproject.toml or DESCRIPTION? Are versions pinned?
+5. Check random seed handling: if random numbers are used, do same seeds give identical results?
+6. For Tier 1 and 2: check version control — git tags, semantic versioning.
+7. For Tier 1: check if package is on PyPI/CRAN, look for CHANGELOG.
+8. Score each metric as an integer 0–10.
 
 Return ONLY a JSON object (no other text):
 {
@@ -300,6 +303,7 @@ If failed=true, clearly state which metric caused the failure and why.>
 
 ## Notes
 
+- **General scoring principle**: If no specific improvements can be identified for a metric, score 10/10. If scoring below 10, always list the specific improvements that would raise the score. Don't dock points for theoretical issues — only for concrete, observable problems.
 - **Skip large and binary files**: Do not read files larger than 100 KB, or files with extensions `.csv`, `.pdf`, `.png`, `.jpg`, `.jpeg`, `.gif`, `.bmp`, `.svg`, `.ico`, `.tiff`, `.webp`. These are too large or not human-readable source code.
 - If the project is very large, focus on a representative sample: main source files, entry points, README, tests, and CI config.
 - For R projects: look for `DESCRIPTION`, `R/`, `tests/testthat/`, `vignettes/`, `man/` directories.
