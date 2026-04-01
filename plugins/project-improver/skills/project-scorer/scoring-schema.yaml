@@ -63,7 +63,7 @@ tier1:
 
   usability:
     simple:
-      description: "UIs are easy, intuitive, validated, with helpful error messages; common workflows are one-liners"
+      description: "UIs (scripts/classes/functions) are easy, intuitive, validated, with helpful error messages; common workflows are one-liners"
       rubric:
         0:  "Unclear how to use; no coherent public UI"
         3:  "Basic usage possible but many sharp edges and missing defaults"
@@ -71,7 +71,7 @@ tier1:
         7:  "Clean UIs with sensible defaults, validated, good error messages"
         10: "No specific improvements identifiable; intuitive UIs, great errors, common workflows are one-liners"
     powerful:
-      description: "UIs flexible and adaptable; all assumptions modifiable; classes composable and subclassable"
+      description: "UIs (scripts/classes/functions) are flexible and adaptable; all assumptions modifiable; classes composable and subclassable"
       rubric:
         0:  "Completely rigid; no flexibility"
         3:  "Minor configuration options only"
@@ -88,7 +88,7 @@ tier1:
         9:  "Well-optimized with performance tests/benchmarks; vectorized critical paths; parallelization available; only very minor issues"
         10: "No specific improvements identifiable; profiled, optimized critical paths, no regressions; slow frequently-run tasks parallelized"
     documented:
-      description: "Clear what UIs to interact with; readmes, docstrings with examples on major classes, tutorials, comprehensive user guide"
+      description: "Clear what UIs (scripts/classes/functions) to interact with; readmes, docstrings with examples on major classes, tutorials, comprehensive user guide"
       rubric:
         0:  "No documentation of any kind"
         2:  "Readme only, no docstrings; unclear what UIs to use"
