@@ -28,6 +28,18 @@ Then install either or both plugins from the **Discover** tab (`/plugin`).
 
 Although these plugins were built for Claude Code, they will work with any LLM via [OpenSkills](https://github.com/numman-ali/openskills).
 
+## Quick usage example
+
+Once the **starsim-ai** plugin is installed, just ask Claude to build a model. The plugin's skills activate automatically based on context:
+
+```
+You: "Build a simple SIR model with 10,000 agents, beta=0.1, and plot the results"
+
+Claude: [activates starsim-dev-intro and starsim-dev-diseases skills, then writes and runs the model]
+```
+
+You can also invoke skills directly with slash commands (e.g., `/starsim-dev`).
+
 ## Skills
 
 ### Starsim
@@ -124,3 +136,9 @@ claude mcp add --transport sse sciris http://mcp.starsim.org:8002/sse
 - `deploy_mcp_pack`: Scripts for manually deploying the Starsim MCP server
 - `internal`: Scripts used for creating the AI tools (not for the user)
 - `plugins`: Claude Code skills and plugins
+
+## Links
+
+- [Report an issue](https://github.com/starsimhub/starsim_ai/issues)
+- [Starsim documentation](https://docs.starsim.org)
+- [Starsim on GitHub](https://github.com/starsimhub/starsim)
