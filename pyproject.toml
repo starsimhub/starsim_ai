@@ -1,0 +1,15 @@
+[project]
+name = "starsim-ai"
+version = "1.2.0"
+description = "AI agents, skills, and tools for the Starsim disease modeling framework"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.10"
+dependencies = [
+    "sciris>=3.8.0",
+    "claude-agent-sdk>=0.1.0",
+    "mcp-pack>=0.1.0",
+]
+
+[project.urls]
+Repository = "https://github.com/starsimhub/starsim_ai"

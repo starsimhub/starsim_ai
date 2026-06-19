@@ -19,6 +19,16 @@ repos = [
 ]
 
 def run(command, wait=True, log_file=None):
+    """Run a shell command, optionally in the background.
+
+    Args:
+        command (str):    Shell command to execute.
+        wait (bool):      If True, block until the command finishes; if False, run in background.
+        log_file (str):   If provided, redirect stdout/stderr to this file.
+
+    Returns:
+        int: The background process PID (only when wait=False).
+    """
     print(f'Running: {command}')
     cmd_list = ['/bin/bash', '-ic', command] # Runs interactively and executes a command
     if log_file:
