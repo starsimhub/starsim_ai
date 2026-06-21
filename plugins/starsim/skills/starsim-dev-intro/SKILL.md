@@ -172,7 +172,7 @@ network = ss.RandomNet(n_contacts=dict(type='poisson', lam=4))
 
 With either syntax, agents will have varying numbers of contacts drawn from a Poisson distribution with mean 4. The object syntax is generally preferred for clarity; the dict syntax is necessary when specifying distributions inside a parameters dictionary.
 
-Distributions can be used for disease parameters as well, such as duration of infection, to capture real-world variability between agents. Common distribution types include `ss.poisson()`, `ss.normal()`, `ss.lognormal()`, and `ss.uniform()`.
+Distributions can be used for disease parameters as well, such as duration of infection, to capture real-world variability between agents. Common distribution types include `ss.poisson()`, `ss.normal()`, `ss.lognorm_ex()`, and `ss.uniform()`.
 
 ## Module Update Order
 

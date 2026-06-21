@@ -44,6 +44,20 @@ ss.Route
     └── ss.MixingPools
 ```
 
+## CRITICAL: A transmissible disease needs a transmission route
+
+`ss.Infection` and its subclasses (`ss.SIR`, `ss.SIS`, STIs) transmit **only** across a network or mixing pool. A sim with a transmissible disease but no `networks=` (and no `MixingPool`) produces **no secondary transmission** — prevalence just decays from the initial seed and there is no epidemic. This is a frequent silent failure.
+
+```python
+# WRONG -- no transmission route, so no epidemic takes off
+sim = ss.Sim(diseases=ss.SIR(beta=0.2, init_prev=0.05))
+
+# RIGHT -- give the disease a network (or a mixing pool)
+sim = ss.Sim(diseases=ss.SIR(beta=0.2, init_prev=0.05), networks='random')
+```
+
+If an epidemic fails to grow, check (in order): is there a network? is `beta` a plausible per-contact probability (for a contact network, a bare float rather than a rate — see `starsim-dev-time`)? is `init_prev` > 0? Non-communicable conditions (`ss.Disease`/NCDs) do not need a network.
+
 ## Patterns
 
 ### RandomNet -- general-purpose contact network

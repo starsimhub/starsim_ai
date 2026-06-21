@@ -295,15 +295,20 @@ For more complex behavior, subclass `ss.Intervention` and implement `step()`:
 import starsim as ss
 
 class MyVaccine(ss.Intervention):
-    def __init__(self, start_year=2020, efficacy=0.9, **kwargs):
-        super().__init__(**kwargs)
-        self.start_year = start_year
-        self.efficacy = efficacy
+    def __init__(self, pars=None, **kwargs):
+        super().__init__()
+        self.define_pars(
+            start_year = 2020,   # Own param: not auto-gated, gate explicitly in step()
+            efficacy   = 0.9,
+        )
+        self.update_pars(pars, **kwargs)
+        return
 
     def step(self):
-        if self.sim.now == self.start_year:
+        if self.now == self.pars.start_year:   # self.now, not self.sim.now
             eligible = (self.sim.people.age >= 5).uids
-            self.sim.diseases.sir.rel_trans[eligible] *= 1 - self.efficacy
+            self.sim.diseases.sir.rel_trans[eligible] *= 1 - self.pars.efficacy
+        return
 
 sim = ss.Sim(
     diseases='sir',
@@ -312,6 +317,8 @@ sim = ss.Sim(
 )
 sim.run()
 ```
+
+See **Custom intervention conventions** below for the full set of lifecycle rules (`define_states`, `init_post`, `self.ti`, reserved `start`/`stop`).
 
 ### 13. Comparing baseline vs. intervention with ss.parallel()
 
@@ -350,6 +357,60 @@ plt.title('Prevalence')
 plt.legend()
 plt.show()
 ```
+
+## Custom intervention conventions (IMPORTANT)
+
+Capable models get the happy path right but repeatedly miss these lifecycle conventions. Follow this canonical skeleton for any class-based intervention:
+
+```python
+import starsim as ss
+
+class Vaccinate(ss.Intervention):
+    def __init__(self, pars=None, **kwargs):
+        super().__init__()
+        self.define_pars(
+            p_vx = ss.bernoulli(p=0.2),   # Distribution, not a plain float
+            eff  = 0.8,
+            start = ss.date(2020),         # 'start'/'stop' are RESERVED — see below
+        )
+        self.update_pars(pars, **kwargs)
+
+        # MANDATORY: per-agent state goes in define_states, never as a plain attribute
+        self.define_states(
+            ss.BoolState('vaccinated', label='Vaccinated'),
+            ss.FloatArr('ti_vaccinated', label='Time vaccinated'),
+        )
+        return
+
+    def init_post(self):
+        """ Init hook; self.sim is already linked. Use this, not initialize(self, sim). """
+        super().init_post()
+        # ... any setup that needs the initialized sim ...
+        return
+
+    def step(self):
+        # step() is NOT auto-gated on start/stop — gate explicitly
+        if self.t.now() < self.pars.start:
+            return
+        eligible = (~self.vaccinated).uids
+        vx_uids = self.pars.p_vx.filter(eligible)   # CRN-safe selection
+        self.vaccinated[vx_uids] = True
+        self.ti_vaccinated[vx_uids] = self.ti       # self.ti, not self.sim.t.ti
+        self.sim.diseases.sir.rel_sus[vx_uids] *= 1 - self.pars.eff
+        return
+```
+
+Key conventions, each a frequent failure point:
+
+1. **`define_states([...])` is mandatory for per-agent state.** Track `vaccinated`, `diagnosed`, `treated`, etc. with `ss.BoolArr`/`ss.FloatArr` via `define_states` — never as plain Python attributes or hand-rolled arrays. State arrays grow with births, reset on death, and are exported in results; plain attributes silently break all of this.
+
+2. **`init_post(self)` is the init hook.** `self.sim` is auto-linked, so the signature takes no `sim` argument. Do **not** define `initialize(self, sim)` or use `setattribute`. Most interventions don't need an init hook at all; if you do, call `super().init_post()` first.
+
+3. **`self.ti` is the module timestep; `self.now`/`self.t.now()` is the current date.** Use `self.ti` rather than `self.sim.t.ti`, and `self.now` rather than `self.sim.now`. These module-level accessors exist on every module.
+
+4. **`start` and `stop` are reserved `Intervention` timeline kwargs**, but `step()` is **not** automatically gated on them. If you store your own `start`/`stop`, gate explicitly at the top of `step()` (`if self.t.now() < self.pars.start: return`). Naming an unrelated parameter `start`/`stop` collides with the reserved kwargs — pick a different name.
+
+5. **Module method order is `init → step → finalize`.** `__init__` (then `init_pre`/`init_results`/`init_post` during `sim.init()`), then `step()` once per timestep, then `finalize()`/`finalize_results()` after the run. Put per-agent setup in `define_states`, result arrays in `init_results`/`define_results`, per-step logic in `step`, and post-processing in `finalize_results` (always calling `super()` in the overridden lifecycle methods).
 
 ## Anti-patterns
 

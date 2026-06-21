@@ -178,6 +178,40 @@ plt.axvline(2015, color='k', label='Intervention')  # Plain int works with float
 plt.legend()
 ```
 
+### CRITICAL: Is this value a float, a rate, a probability, or a distribution?
+
+This is the single biggest source of wrong Starsim models. Before wrapping any value, decide what it actually is. **When in doubt, leave a value as a bare float** — over-wrapping a plain parameter in `ss.peryear()` silently shifts its scale and corrupts results.
+
+| The value is... | Use | Example | Notes |
+|---|---|---|---|
+| A per-contact transmission probability (`beta`) over a network | **bare float** | `beta=0.1` | For the usual contact-network case, `ss.Infection`/`ss.SIR` `beta` is a per-contact *probability*, NOT a rate — the network handles the timestep, so do **not** wrap in `ss.perday`/`ss.peryear`. (A non-contact-based transmission route can be the exception — see below.) |
+| A dimensionless multiplier (`rel_sus`, efficacy, fraction) | **bare float** | `rel_sus=2.0` | Never a TimePar. |
+| A rate from the literature ("0.1 deaths per year") | `ss.peryear` / `ss.perday` | `death_rate=ss.peryear(0.1)` | Auto-converts to a per-timestep probability via `dt`. |
+| An observed probability over a period ("1% died this year") | `ss.probperyear` / `ss.prob(p, window)` | `ss.probperyear(0.01)` or `ss.prob(0.01, ss.years(1))` | Back-calculates the rate, then re-converts across periods. |
+| A unitless probability with no timescale | `ss.prob` (bare) | `ss.prob(0.5)` | No `dt` conversion. |
+| A count of events per time ("80 acts per year") | `ss.freqperyear` | `ss.freqperyear(80)` | Scales linearly, not as a probability. |
+| A per-agent random draw (durations, who gets infected) | a `Dist` | `ss.bernoulli(p=0.1)`, `ss.lognorm_ex(mean=ss.years(6))` | Sampled per agent via `.rvs(uids)`/`.filter(uids)`. See `starsim-dev-distributions`. |
+
+**`ss.prob` (a scalar TimePar) vs `ss.bernoulli` (a Dist) are not interchangeable.** Use `ss.prob`/`ss.probperyear` when you need a *number* (e.g. a rate that gets multiplied and converted with `.to_prob()`). Use `ss.bernoulli` when you need to *draw an outcome per agent* (`.filter(uids)` returns the UIDs that succeeded). A module parameter that decides "does this agent get infected/vaccinated/treated?" is almost always `ss.bernoulli`, not `ss.prob`.
+
+### CRITICAL: For contact-based transmission, `beta` is a scalar probability, not a rate
+
+For `ss.Infection` and its subclasses (`ss.SIR`, `ss.SIS`, all STIs) transmitting over a **contact network** — the typical case — `beta` is the **per-contact transmission probability**: a bare float (or a dict of floats keyed by network). The network already accounts for the timestep, so wrapping `beta` in `ss.perday`/`ss.peryear` here is a common and serious bug — it reinterprets the number as a hazard and rescales it by `dt`, corrupting the transmission scale.
+
+The exception is transmission that is *not* mediated by a per-contact network (e.g. an environmental or force-of-infection route applied per timestep). There, expressing the parameter as a rate (`ss.peryear`/`ss.perday`) can be the correct choice. Decide which route you actually have before wrapping or not wrapping `beta`.
+
+```python
+# RIGHT — beta is a plain per-contact probability
+sir = ss.SIR(beta=0.1)
+sti = ss.HIV(beta={'mf': 0.05, 'msm': 0.1})
+
+# WRONG — do not wrap beta in a rate; this corrupts the transmission scale
+sir = ss.SIR(beta=ss.perday(0.1))   # BUG
+sir = ss.SIR(beta=ss.peryear(0.1))  # BUG
+```
+
+Conversely, a bare `beta=0.1` is *not* "per year" — it is applied per contact per timestep as-is. If no epidemic takes off, suspect the network or `init_prev`, not the beta units.
+
 ### Rates: three types
 
 Starsim distinguishes three types of rates. Choosing the right one is important.
@@ -389,10 +423,12 @@ Timeline:
   sim.t                                  # Sim's timeline
 
 Rates:
-  ss.freqperyear(80)                     # Frequency: events per time
-  ss.peryear(0.1)                        # Probability rate per time
-  ss.probperyear(0.01)                   # Probability per time period
-  ss.prob(0.5)                           # Unitless probability
+  ss.freqperyear(80)                     # Frequency: events per time (also freqperday, etc.)
+  ss.peryear(0.1)                        # Probability rate per time (also perday, etc.)
+  ss.probperyear(0.01)                   # Probability per time period (also probperday, etc.)
+  ss.prob(0.5)                           # Unitless probability (no dt conversion)
+  ss.prob(0.01, ss.years(1))             # Probability over an explicit window
+  beta=0.1                               # Transmission beta: BARE FLOAT, never a rate
 
 Rate to probability:
   rate.to_prob()                         # Convert using module dt

@@ -212,6 +212,80 @@ plt.hist(fh.birth_weight[mask], bins=30)
 
 Also note: indexing an `Arr` with UIDs (e.g., `arr[uids]`) returns a plain numpy array, not an `Arr` — so calling `.values` on the result will fail. Just use the result directly.
 
+### CRITICAL: A boolean state is NOT a list of UIDs
+
+This is one of the most common and damaging mistakes. To get *the agents* who are in a state, use `state.uids`. Never index/iterate a boolean state directly as if it held UIDs, and never cast it to int.
+
+```python
+disease = sim.diseases.sir
+
+# WRONG -- these give booleans or {0,1}, NOT agent UIDs
+disease.infected[:]                       # boolean array, not UIDs
+np.array(disease.infected, dtype=int)     # array of 0s and 1s, not UIDs
+[i for i, v in enumerate(disease.infected) if v]  # positions, not UIDs
+
+# RIGHT -- .uids returns the UIDs where the state is True
+infected_uids = disease.infected.uids
+```
+
+Feeding a boolean array (or `{0,1}` ints) where UIDs are expected silently selects agents 0 and 1, corrupting connectors, diagnosis logic, and intervention targeting.
+
+### CRITICAL: "Newly infected this step" is `ti_infected == ti - 1`
+
+Do not hand-roll a previous-step tracker. Each disease records the timestep each agent entered a state in a `ti_*` array. Agents infected on the *previous* step (now observable this step) satisfy:
+
+```python
+# Agents who became infected on the step that just completed
+new_uids = (disease.ti_infected == self.ti - 1).uids
+
+# Agents who became infected on THIS step (e.g. inside an analyzer running at step end)
+new_uids = (disease.ti_infected == self.ti).uids
+```
+
+Whether you compare to `self.ti` or `self.ti - 1` depends on where in the loop you run (see `starsim-dev-sim` for execution order). Comparing a `ti_*` `FloatArr` to an int returns a boolean `Arr`; call `.uids` to get the agents. Hand-rolled "remember last step's set and diff it" logic is off-by-one-prone and unnecessary.
+
+### `np.where(mask)[0]` returns positions, not UIDs
+
+```python
+# WRONG -- positions into the active-agent array, NOT UIDs
+idx = np.where(disease.infected)[0]
+
+# RIGHT -- .uids (or .true()) returns actual UIDs
+uids = disease.infected.uids
+```
+
+Under demographics (births/deaths) positions and UIDs diverge, so `np.where` results will index the wrong agents.
+
+### Use `people[state]` / `module[state]`, not `getattr()`
+
+Both `People` and modules support string indexing, which is cleaner than `getattr`:
+
+```python
+# Preferred
+age = sim.people['age']
+infected = sim.diseases.sir['infected']
+
+# Avoid
+age = getattr(sim.people, 'age')
+infected = getattr(sim.diseases.sir, 'infected')
+```
+
+Use this especially when the attribute name is dynamic (held in a variable).
+
+### You usually do NOT need to filter on `people.alive`
+
+State arrays and `.uids` are already restricted to active (alive) agents — `.values`, `bool_state.uids`, `.mean()`, etc. all exclude the dead automatically. Adding `& people.alive` is redundant noise:
+
+```python
+# Redundant -- infected.uids already excludes dead agents
+infected_uids = (disease.infected & people.alive).uids
+
+# Sufficient
+infected_uids = disease.infected.uids
+```
+
+Only reach for `.raw` (which includes the dead) when you explicitly need post-mortem accounting.
+
 ### Do not forget to check if UID arrays are empty
 
 ```python
@@ -238,6 +312,9 @@ if len(infected_uids) > 0:
 | Mean age of active agents | `sim.people.age.mean()` |
 | Sum over active agents | `sim.people.age.sum()` |
 | UIDs where BoolState is True | `sim.people.female.uids` or `sim.people.female.true()` |
+| UIDs of agents in a disease state | `sim.diseases.sir.infected.uids` (NOT `infected[:]` or `int(infected)`) |
+| UIDs infected on the previous step | `(disease.ti_infected == self.ti - 1).uids` |
+| Access a state by name | `sim.people['age']`, `module['infected']` (not `getattr`) |
 | UIDs where BoolState is False | `sim.people.alive.false()` |
 | Intersect two UID sets | `uids_a.intersect(uids_b)` |
 | Union two UID sets | `uids_a.union(uids_b)` |

@@ -96,7 +96,7 @@ class MyModule(ss.Module):
         super().__init__()
         self.define_pars(
             p_event = ss.bernoulli(p=0.3),
-            dur_event = ss.lognormal(mean=5, std=1),
+            dur_event = ss.lognorm_ex(mean=5, std=1),
         )
         self.update_pars(pars=pars, **kwargs)
         return
@@ -163,7 +163,7 @@ class MyDisease(ss.Module):
         self.define_pars(
             p_infection = ss.bernoulli(p=0.1),   # one dist for infection
             p_death = ss.bernoulli(p=0.02),       # separate dist for death
-            dur_inf = ss.lognormal(mean=10, std=2),  # separate dist for duration
+            dur_inf = ss.lognorm_ex(mean=10, std=2),  # separate dist for duration
         )
         self.update_pars(pars=pars, **kwargs)
         return
@@ -196,7 +196,7 @@ values = np.random.rand(len(all_uids))
 values = self.pars.my_uniform.rvs(all_uids)
 ```
 
-Any call to `np.random` draws from a shared global PRNG with no per-agent mapping. This introduces stochastic branching noise.
+Any call to `np.random` draws from a shared global PRNG with no per-agent mapping, which introduces stochastic branching noise. Prefer `ss.<dist>` wherever possible; only fall back to `np.random` in rare cases that genuinely sit outside the CRN system.
 
 ### WRONG: Create new distributions every step
 
@@ -293,7 +293,7 @@ The only reason to set `single_rng = True` is for benchmarking or demonstrating 
 | Check CRN is enabled | `assert ss.options.single_rng == False` |
 | Disable CRN (legacy mode) | `ss.options.single_rng = True` |
 | Create Bernoulli distribution | `ss.bernoulli(p=0.3)` |
-| Create lognormal distribution | `ss.lognormal(mean=5, std=1)` |
+| Create lognormal distribution | `ss.lognorm_ex(mean=5, std=1)` |
 | Draw values for agents | `dist.rvs(uids)` |
 | Draw values with boolean mask | `dist.rvs(mask)` |
 | Filter Bernoulli successes | `uids = dist.filter()` or `dist.filter(subset_uids)` |

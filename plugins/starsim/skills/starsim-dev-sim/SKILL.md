@@ -282,19 +282,17 @@ ppl.plot_ages()
 Custom states let you track additional per-agent attributes beyond the defaults. The `default` can be a static value, a callable that receives `n` (population size) and returns an array, or a distribution.
 
 ```python
-import numpy as np
 import starsim as ss
 
-# Boolean state with callable default
-def urban_function(n):
-    return np.random.choice([True, False], p=[0.5, 0.5], size=n)
-
-urban = ss.BoolState('urban', default=urban_function)
+# Boolean state with a distribution default (preferred -- CRN-safe)
+urban = ss.BoolState('urban', default=ss.bernoulli(p=0.5))
 ppl = ss.People(10, extra_states=urban)
 sim = ss.Sim(people=ppl)
 sim.init()  # Essential: this triggers state sampling
-print(f'Urban agents: {np.count_nonzero(sim.people.urban)}')
+print(f'Urban agents: {sim.people.urban.sum()}')
 ```
+
+Prefer a distribution (or a callable that uses one) over `np.random` for state defaults — it keeps initialization reproducible and CRN-consistent. See `starsim-dev-distributions`.
 
 You can pass multiple extra states as a list:
 
@@ -568,7 +566,6 @@ Bernoulli distributions are type-locked because they have unique methods like `f
 ## Quick Reference
 
 ```python
-import numpy as np
 import starsim as ss
 
 # --- Sim creation and running ---
@@ -603,7 +600,7 @@ len(sim.people.uid.raw)      # Total agents ever created (alive + dead)
 sim.people.age.mean()        # Mean age (alive only, automatic)
 
 # --- Custom states on People ---
-urban = ss.BoolState('urban', default=lambda n: np.random.rand(n) > 0.5)
+urban = ss.BoolState('urban', default=ss.bernoulli(p=0.5))
 ppl = ss.People(1000, extra_states=urban)
 sim = ss.Sim(people=ppl)
 sim.init()

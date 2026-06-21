@@ -14,8 +14,8 @@ Starsim wraps statistical distributions in a framework that supports per-agent s
 | Random | `ss.random()` | (none) | Uniform float in [0, 1] |
 | Uniform | `ss.uniform()` | `low`, `high` | Uniform float in [low, high] |
 | Normal | `ss.normal()` | `loc`, `scale` | Gaussian with mean `loc` and std `scale` |
-| Lognormal (implicit) | `ss.lognormal_im()` | `mean`, `sigma` | Lognormal specified by underlying normal's mean and sigma |
-| Lognormal (explicit) | `ss.lognormal_ex()` | `mean`, `std` | Lognormal specified by the distribution's own mean and std |
+| Lognormal (implicit) | `ss.lognorm_im()` | `mean`, `sigma` | Lognormal specified by underlying normal's mean and sigma |
+| Lognormal (explicit) | `ss.lognorm_ex()` | `mean`, `std` | Lognormal specified by the distribution's own mean and std |
 | Exponential | `ss.expon()` | `scale` | Exponential with mean = `scale` (i.e. 1/lambda) |
 | Poisson | `ss.poisson()` | `lam` | Poisson with rate `lam` |
 | Negative Binomial | `ss.nbinom()` | `n`, `p` | Negative binomial (n successes, probability p) |
@@ -33,7 +33,7 @@ Note: `ss.beta_dist()` uses the name `beta_dist` (not `beta`) to avoid collision
 ## Choosing the right distribution
 
 - **Binary decisions** (infection, vaccination, death): `ss.bernoulli(p=...)` -- by far the most common. Use `filter()` to get UIDs of agents where the trial succeeds.
-- **Durations** (infection length, incubation period): `ss.lognormal_ex(mean=..., std=...)` or `ss.weibull(c=..., scale=...)`. Use `ss.dur()` to specify durations in human-readable units, e.g. `ss.lognorm_ex(mean=ss.dur(6))`.
+- **Durations** (infection length, incubation period): `ss.lognorm_ex(mean=..., std=...)` or `ss.weibull(c=..., scale=...)`. Use `ss.dur()` to specify durations in human-readable units, e.g. `ss.lognorm_ex(mean=ss.dur(6))`.
 - **Counts** (number of contacts): `ss.poisson(lam=...)` or `ss.nbinom(n=..., p=...)`.
 - **Continuous values** (viral load, antibody levels): `ss.normal()`, `ss.gamma()`, `ss.beta_dist()`.
 - **Fixed values** (debugging, placeholders): `ss.constant(v=...)`.
@@ -54,7 +54,7 @@ d = ss.normal(name="My normal", loc=0, scale=1, strict=False)
 print(d)
 
 # Inside a module, create in __init__ -- no strict flag needed
-# self.define_pars(dur_inf=ss.lognormal_ex(mean=6, std=2))
+# self.define_pars(dur_inf=ss.lognorm_ex(mean=6, std=2))
 ```
 
 ### Sampling with rvs(uids)
@@ -304,7 +304,7 @@ class MyDisease(ss.SIR):
     def __init__(self, pars=None, **kwargs):
         super().__init__()
         self.define_pars(
-            dur_exp=ss.lognormal_ex(mean=5, std=2),
+            dur_exp=ss.lognorm_ex(mean=5, std=2),
         )
         self.update_pars(pars, **kwargs)
 
@@ -349,7 +349,7 @@ draws = d.rvs([3, 5, 2, 9, 4])
 draws = d.rvs(sim.people.age < 25)
 ```
 
-**Do not use `np.random` directly.** Calling `np.random.random()`, `np.random.choice()`, etc. breaks Starsim's CRN system because the draws are not tied to agent UIDs. Always use `ss.<dist>` instead.
+**Avoid `np.random` for per-agent sampling.** Calling `np.random.random()`, `np.random.choice()`, etc. breaks Starsim's CRN system because the draws are not tied to agent UIDs. Use `ss.<dist>` wherever possible; reach for `np.random` only in rare cases that genuinely sit outside the CRN system (e.g. one-off setup unrelated to agents).
 
 ```python
 # WRONG -- breaks CRN
@@ -412,7 +412,7 @@ Lifecycle:
 
 Common distributions by use case:
   ss.bernoulli(p=0.1)                    # Binary decisions (infection, vax, death)
-  ss.lognormal_ex(mean=6, std=2)         # Durations (infection, incubation)
+  ss.lognorm_ex(mean=6, std=2)           # Durations (infection, incubation)
   ss.weibull(c=2, scale=3)              # Duration / survival analysis
   ss.normal(loc=0, scale=1)              # Symmetric continuous values
   ss.poisson(lam=5)                      # Count data (contacts per day)
