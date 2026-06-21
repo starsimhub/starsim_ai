@@ -63,7 +63,7 @@ ss.Calibration(..., debug=True).calibrate()
 | Symptom | Most likely cause | Where to look |
 |---|---|---|
 | Epidemic never takes off (prevalence just decays) | No `networks=`/mixing pool, or `init_prev=0` | `starsim-dev-networks` |
-| Transmission far too high/low; results change wildly with `dt` | `beta` wrapped in a rate (`ss.peryear`/`ss.perday`) — it must be a **bare float** | `starsim-dev-time` |
+| Transmission far too high/low; results change wildly with `dt` | For contact-network transmission, `beta` should be a **bare float**, not wrapped in a rate (`ss.peryear`/`ss.perday`) — the network handles the timestep | `starsim-dev-time` |
 | Death/event rates wrong; change with timestep | Called `.to_prob()` before multiplying by relative factors, or wrong rate type | `starsim-dev-time` |
 | `IndexError`/nonsense agents selected; breaks after deaths | Boolean state used as UIDs, `np.where(mask)[0]`, or positional vs UID indexing | `starsim-dev-indexing` |
 | Off-by-one in "new cases this step" | Hand-rolled previous-step tracker instead of `ti_infected == ti-1` | `starsim-dev-indexing` |

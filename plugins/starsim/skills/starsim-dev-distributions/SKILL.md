@@ -349,7 +349,7 @@ draws = d.rvs([3, 5, 2, 9, 4])
 draws = d.rvs(sim.people.age < 25)
 ```
 
-**Do not use `np.random` directly.** Calling `np.random.random()`, `np.random.choice()`, etc. breaks Starsim's CRN system because the draws are not tied to agent UIDs. Always use `ss.<dist>` instead.
+**Avoid `np.random` for per-agent sampling.** Calling `np.random.random()`, `np.random.choice()`, etc. breaks Starsim's CRN system because the draws are not tied to agent UIDs. Use `ss.<dist>` wherever possible; reach for `np.random` only in rare cases that genuinely sit outside the CRN system (e.g. one-off setup unrelated to agents).
 
 ```python
 # WRONG -- breaks CRN

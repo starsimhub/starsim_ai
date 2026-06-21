@@ -22,16 +22,17 @@ RULES = [
     (
         "np-random",
         re.compile(r"\b(?:np|numpy)\.random\b"),
-        "uses `np.random` — Starsim sampling must go through an `ss.<dist>` (e.g. "
-        "`ss.normal`, `ss.bernoulli`) to use the Common Random Number stream. "
+        "uses `np.random` — prefer routing Starsim sampling through an `ss.<dist>` (e.g. "
+        "`ss.normal`, `ss.bernoulli`) where possible, to use the Common Random Number stream. "
         "See starsim-dev-random / starsim-dev-distributions.",
     ),
     (
         "beta-rate",
         re.compile(r"beta\s*=\s*ss\.(?:peryear|perday)\b"),
-        "wraps transmission `beta` in a rate (`ss.peryear`/`ss.perday`). `beta` is a "
-        "bare per-act probability float — pass it plain (e.g. `beta=0.1`). "
-        "See starsim-dev-time.",
+        "wraps transmission `beta` in a rate (`ss.peryear`/`ss.perday`). For the typical "
+        "contact-network case `beta` is a bare per-contact probability — pass it plain "
+        "(e.g. `beta=0.1`); a rate is only appropriate for a non-contact-based transmission "
+        "route. Verify which you have. See starsim-dev-time.",
     ),
     (
         "old-initialize",

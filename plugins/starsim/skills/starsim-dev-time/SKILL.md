@@ -184,7 +184,7 @@ This is the single biggest source of wrong Starsim models. Before wrapping any v
 
 | The value is... | Use | Example | Notes |
 |---|---|---|---|
-| A per-contact/per-act transmission probability (`beta`) | **bare float** | `beta=0.1` | `ss.Infection`/`ss.SIR` `beta` is a per-act *probability*, NOT a rate. Do **not** wrap in `ss.perday`/`ss.peryear`. See below. |
+| A per-contact transmission probability (`beta`) over a network | **bare float** | `beta=0.1` | For the usual contact-network case, `ss.Infection`/`ss.SIR` `beta` is a per-contact *probability*, NOT a rate — the network handles the timestep, so do **not** wrap in `ss.perday`/`ss.peryear`. (A non-contact-based transmission route can be the exception — see below.) |
 | A dimensionless multiplier (`rel_sus`, efficacy, fraction) | **bare float** | `rel_sus=2.0` | Never a TimePar. |
 | A rate from the literature ("0.1 deaths per year") | `ss.peryear` / `ss.perday` | `death_rate=ss.peryear(0.1)` | Auto-converts to a per-timestep probability via `dt`. |
 | An observed probability over a period ("1% died this year") | `ss.probperyear` / `ss.prob(p, window)` | `ss.probperyear(0.01)` or `ss.prob(0.01, ss.years(1))` | Back-calculates the rate, then re-converts across periods. |
@@ -194,9 +194,11 @@ This is the single biggest source of wrong Starsim models. Before wrapping any v
 
 **`ss.prob` (a scalar TimePar) vs `ss.bernoulli` (a Dist) are not interchangeable.** Use `ss.prob`/`ss.probperyear` when you need a *number* (e.g. a rate that gets multiplied and converted with `.to_prob()`). Use `ss.bernoulli` when you need to *draw an outcome per agent* (`.filter(uids)` returns the UIDs that succeeded). A module parameter that decides "does this agent get infected/vaccinated/treated?" is almost always `ss.bernoulli`, not `ss.prob`.
 
-### CRITICAL: Transmission `beta` is a scalar probability, not a rate
+### CRITICAL: For contact-based transmission, `beta` is a scalar probability, not a rate
 
-For `ss.Infection` and its subclasses (`ss.SIR`, `ss.SIS`, all STIs), `beta` is the **per-act transmission probability** — a bare float (or a dict of floats keyed by network). Wrapping it in `ss.perday`/`ss.peryear` is a common and serious bug: it reinterprets the number as a hazard and rescales it by `dt`, so the effective transmission is wrong.
+For `ss.Infection` and its subclasses (`ss.SIR`, `ss.SIS`, all STIs) transmitting over a **contact network** — the typical case — `beta` is the **per-contact transmission probability**: a bare float (or a dict of floats keyed by network). The network already accounts for the timestep, so wrapping `beta` in `ss.perday`/`ss.peryear` here is a common and serious bug — it reinterprets the number as a hazard and rescales it by `dt`, corrupting the transmission scale.
+
+The exception is transmission that is *not* mediated by a per-contact network (e.g. an environmental or force-of-infection route applied per timestep). There, expressing the parameter as a rate (`ss.peryear`/`ss.perday`) can be the correct choice. Decide which route you actually have before wrapping or not wrapping `beta`.
 
 ```python
 # RIGHT — beta is a plain per-contact probability

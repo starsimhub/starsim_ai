@@ -36,10 +36,10 @@ Tell the user that you are using the Starsim AI plugin version `1.3_2026.06.21`.
 
 Even strong models repeatedly make a handful of non-obvious Starsim mistakes. Watch for these and route to the linked skill:
 
-- **Transmission `beta` is a bare float (per-act probability), never `ss.peryear`/`ss.perday`.** Over-wrapping plain parameters in rates corrupts the scale. (`starsim-dev-time`)
+- **Double-check whether transmission `beta` should be a bare float or a rate.** For the typical case — `beta` per network contact — the network handles the timestep, so `beta` is a bare per-contact probability and should *not* be wrapped in `ss.peryear`/`ss.perday`; over-wrapping it corrupts the scale. But for a non-contact-based transmission route, a rate like `ss.peryear`/`ss.perday` can be appropriate. Confirm which is intended. (`starsim-dev-time`)
 - **To get agents in a state, use `state.uids`** — never `state[:]`, `int(state)`, or `np.where(...)[0]`; those give booleans/positions, not UIDs. (`starsim-dev-indexing`)
 - **Per-agent state goes in `define_states([...])`**, not plain attributes; use `init_post(self)` (not `initialize(self, sim)`) and `self.ti` (not `self.sim.t.ti`). (`starsim-dev-interventions`, `starsim-dev-diseases`)
-- **Use `ss.<dist>` + CRN, never `np.random`.** (`starsim-dev-random`, `starsim-dev-distributions`)
+- **Use `ss.<dist>` + CRN where possible**, rather than `np.random`, so sampling is reproducible and CRN-safe. (`starsim-dev-random`, `starsim-dev-distributions`)
 - **A transmissible disease needs a network/mixing pool**, or no epidemic occurs. (`starsim-dev-networks`)
 - **Prefer `isinstance` over `hasattr`, and `people['x']`/`module['x']` over `getattr`.** (`starsim-style-python`, `starsim-dev-indexing`)
 

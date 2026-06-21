@@ -21,10 +21,14 @@ everything else. Drop it into the root of a Starsim project to make it active.
 
 ## Anti-patterns to avoid
 
-- **`np.random` for sampling** → use an `ss.<dist>` (e.g. `ss.normal`, `ss.bernoulli`) so
-  sampling flows through the Common Random Number (CRN) stream. Reproducibility depends on it.
-- **`beta=ss.peryear(...)` / `ss.perday(...)`** → transmission `beta` is a bare per-act
-  probability float; pass it plain (`beta=0.1`). Wrapping it in a rate corrupts the scale.
+- **`np.random` for sampling** → prefer an `ss.<dist>` (e.g. `ss.normal`, `ss.bernoulli`)
+  where possible, so sampling flows through the Common Random Number (CRN) stream;
+  reproducibility depends on it. Reach for `np.random` only in rare cases that genuinely sit
+  outside the CRN system.
+- **`beta=ss.peryear(...)` / `ss.perday(...)`** → for the typical contact-network case,
+  transmission `beta` is a bare per-contact probability; pass it plain (`beta=0.1`), since the
+  network handles the timestep and wrapping it in a rate corrupts the scale. A rate is only
+  appropriate for a deliberately non-contact-based transmission route — verify which you have.
 - **`def initialize(self, sim)`** → wrong lifecycle hook; override `init_post(self)`.
 - **`self.sim.t.ti`** → inside a module use `self.ti`.
 - **`np.where(state)[0]` / `state[:]` / `int(state)` to get agents** → these give

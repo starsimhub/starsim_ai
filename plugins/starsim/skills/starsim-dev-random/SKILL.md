@@ -196,7 +196,7 @@ values = np.random.rand(len(all_uids))
 values = self.pars.my_uniform.rvs(all_uids)
 ```
 
-Any call to `np.random` draws from a shared global PRNG with no per-agent mapping. This introduces stochastic branching noise.
+Any call to `np.random` draws from a shared global PRNG with no per-agent mapping, which introduces stochastic branching noise. Prefer `ss.<dist>` wherever possible; only fall back to `np.random` in rare cases that genuinely sit outside the CRN system.
 
 ### WRONG: Create new distributions every step
 

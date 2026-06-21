@@ -56,7 +56,7 @@ sim = ss.Sim(diseases=ss.SIR(beta=0.2, init_prev=0.05))
 sim = ss.Sim(diseases=ss.SIR(beta=0.2, init_prev=0.05), networks='random')
 ```
 
-If an epidemic fails to grow, check (in order): is there a network? is `beta` a plausible per-contact probability (a bare float, not a rate — see `starsim-dev-time`)? is `init_prev` > 0? Non-communicable conditions (`ss.Disease`/NCDs) do not need a network.
+If an epidemic fails to grow, check (in order): is there a network? is `beta` a plausible per-contact probability (for a contact network, a bare float rather than a rate — see `starsim-dev-time`)? is `init_prev` > 0? Non-communicable conditions (`ss.Disease`/NCDs) do not need a network.
 
 ## Patterns
 
