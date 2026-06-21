@@ -9,6 +9,7 @@ A Claude Code plugin that provides Starsim and Sciris MCP tools and modeling ski
 - **starsim-style skills** - 4 skills covering Starsim code style, documentation, testing, and design philosophy.
 - **sciris-utilities skill** - Activates when using Sciris utilities (file I/O, parallelization, data structures, etc.).
 - **stisim-modeling skill** - Activates when building STIsim simulations (HIV, syphilis, chlamydia, etc.).
+- **Anti-pattern hook** - A PostToolUse hook that scans Python you write for well-known Starsim mistakes (e.g. `np.random` instead of CRN, `np.where` instead of `state.uids`, `beta` wrapped in a rate) and nudges Claude to fix them. Non-blocking and fail-open; the checks are documented in `skills/starsim-dev/starsim-antipatterns.md`.
 
 ## Installation
 
@@ -37,9 +38,13 @@ plugins/starsim/
 ├── .claude/
 │   └── settings.local.json          # Plugin settings
 ├── .mcp.json                        # MCP server definitions (context7)
+├── hooks/
+│   ├── hooks.json                   # PostToolUse hook registration (auto-loaded)
+│   └── check_antipatterns.py        # Flags Starsim anti-patterns in edited Python
 ├── skills/
 │   ├── starsim-dev/
-│   │   └── SKILL.md                 # Dev router — dispatches to topic skills
+│   │   ├── SKILL.md                 # Dev router — dispatches to topic skills
+│   │   └── starsim-antipatterns.md  # Canonical anti-pattern reference
 │   ├── starsim-dev-intro/
 │   │   └── SKILL.md                 # Getting started and architecture
 │   ├── starsim-dev-sim/
@@ -86,5 +91,6 @@ plugins/starsim/
 │   │   └── SKILL.md                 # Sciris utility guidance
 │   └── stisim-modeling/
 │       └── SKILL.md                 # STI disease modeling
+├── AGENTS.md                        # Portable guidance for non–Claude Code agents
 └── README.md
 ```

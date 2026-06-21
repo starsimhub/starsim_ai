@@ -7,7 +7,7 @@ description: Use when the user is building, configuring, or debugging a Starsim 
 
 You are helping the user build agent-based models with [Starsim](https://github.com/starsimhub/starsim) v3.4.0.
 
-Tell the user that you are using the Starsim AI plugin version `1.3_2026.06.21`.
+Tell the user that you are using the Starsim AI plugin version `1.4_2026.06.21`.
 
 ## Routing table
 
@@ -43,12 +43,15 @@ Even strong models repeatedly make a handful of non-obvious Starsim mistakes. Wa
 - **A transmissible disease needs a network/mixing pool**, or no epidemic occurs. (`starsim-dev-networks`)
 - **Prefer `isinstance` over `hasattr`, and `people['x']`/`module['x']` over `getattr`.** (`starsim-style-python`, `starsim-dev-indexing`)
 
+The full, canonical list (with the wrong/correct forms side by side) lives in [`starsim-antipatterns.md`](starsim-antipatterns.md). The plugin's PostToolUse hook (`hooks/check_antipatterns.py`) automatically flags the pattern-matchable ones in Python you write — if it surfaces an advisory, review and fix any that genuinely apply before continuing.
+
 ## Approach
 
 1. Use starsim MCP tools (if available) to look up current API signatures.
 2. If MCP tools are unavailable, use Context7 (`/starsimhub/starsim`) for up-to-date docs.
 3. Start simple — get a minimal working simulation, then layer in complexity.
 4. Prefer built-in modules over custom implementations.
+5. **Verify before declaring done.** After producing a runnable model, actually run it and sanity-check the results — Starsim fails *silently* as often as it errors (no epidemic, flat curves, implausible scale). A clean traceback is not confirmation the model is correct. See `starsim-dev-debugging` for the silent-failure checklist.
 
 ## Minimal example
 
