@@ -46,6 +46,8 @@ When invoked directly for review, check each item against the target code:
 10. **Explicit .keys()** — Using `for key in obj.keys()` is acceptable and preferred when it improves clarity about the object's type.
     *Reference: 2_python.md §2.8 — "It's fine to use for key in obj.keys() instead of for key in obj."*
 
+11. **Prefer `isinstance` over `hasattr`** — Almost always, checking an object's type with `isinstance` is clearer and safer than duck-typing with `hasattr`. `hasattr` silently swallows unrelated attribute errors and couples behavior to an attribute name rather than a type. Reach for `hasattr` only when you genuinely cannot know the type and truly only care whether one attribute exists.
+
 ## Guidelines
 
 ### Type annotations: use docstrings instead
@@ -154,6 +156,22 @@ vaccination_probability = 0.3
 # Bad: too cryptic
 vp = 0.3
 ```
+
+### Prefer `isinstance` over `hasattr`
+
+Type checks should test the type, not probe for an attribute. `hasattr` is implemented by calling `getattr` and catching *any* exception, so it can mask real bugs (a broken property looks "absent"), and it ties the check to an attribute name that may exist on unrelated types.
+
+```python
+# Good: explicit about the type you expect
+if isinstance(net, ss.MixingPool):
+    contacts = net.compute_contacts()
+
+# Bad: duck-typing that hides errors and is ambiguous
+if hasattr(net, 'compute_contacts'):
+    contacts = net.compute_contacts()
+```
+
+In Starsim, prefer `isinstance(obj, ss.Module)`, `isinstance(par, ss.TimePar)`, `isinstance(dist, ss.Dist)`, etc. Use `hasattr` only when the type is genuinely unknowable and a single attribute's presence is all that matters.
 
 ### Import ordering
 

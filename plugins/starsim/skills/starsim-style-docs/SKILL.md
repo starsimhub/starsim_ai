@@ -40,6 +40,9 @@ When invoked directly for review, check each item against the target code or pro
 8. **No Sphinx/rST** — Documentation should use MkDocs (with Material theme) or Quarto. Never Sphinx or reStructuredText.
    *Reference: 4_documentation.md — "Please do not use Sphinx or rST unless you hate yourself and others."*
 
+9. **Actionable changelog entries** — Backwards-incompatible changelog entries must be complete enough for a human or LLM to perform the migration from the entry alone: name the old and new APIs and show the concrete before/after call with example arguments. Flag output-affecting or migration-required changes with **Migration** or **Regression**.
+   *Reference: starsim CONTRIBUTING.md — "Changelog entries"*
+
 ## Guidelines
 
 ### Docstring format
@@ -101,6 +104,19 @@ Additional repo-level files:
 - **What's new / changelog**
 - **Contributing guide**
 - **Code of conduct**
+
+### Changelog entries
+
+Every change goes in `CHANGELOG.md`. Flag anything that changes model output or requires migrating an old parameter set with **Migration** or **Regression**. For backwards-incompatible changes, write the entry so the migration can be done from the changelog alone — name the old and new APIs and show the concrete before/after call:
+
+```markdown
+# Vague — not actionable
+- `ss.foo()` and `ss.bar()` are deprecated; use `ss.cat()` instead.
+
+# Good — a reader can mechanically apply this
+- `ss.foo()` and `ss.bar()` have been replaced by `ss.cat()`. Instead of
+  `ss.foo(x=1)` and `ss.bar(y=2)`, use e.g. `ss.cat(z=[1, 2])`.
+```
 
 ### Documentation tools
 

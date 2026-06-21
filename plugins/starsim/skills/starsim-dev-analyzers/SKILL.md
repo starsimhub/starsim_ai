@@ -260,7 +260,9 @@ sim.analyzers[0].plot()
 
 **Use `self.define_results()` for tracked results.** Do not manually create numpy arrays and attach them to `self`. Using `define_results(ss.Result('name'))` ensures results are properly sized to the simulation duration, correctly named, and automatically exported by `sim.to_df()`.
 
-**Do not store large per-agent data in results.** `ss.Result` arrays are one value per timestep (scalars over time). If you need per-agent data, store it in a custom attribute (like `self.hist` in the age bins example) and convert it in `finalize_results()`.
+**Do not store large per-agent data in results.** `ss.Result` arrays are one value per timestep (scalars over time). If you need per-agent data, store it in a custom attribute (like `self.hist` in the age bins example) and convert it in `finalize_results()`. If you need *persistent* per-agent state (not just a transient buffer), declare it with `self.define_states(ss.FloatArr(...))` so it grows with births and resets on death.
+
+**`self.ti` works inside an analyzer.** Since analyzers run at the sim timestep, `self.ti` equals `self.sim.ti`; prefer the shorter `self.ti`. To count agents who entered a state on the current step, use `(disease.ti_infected == self.ti).uids` rather than diffing against a hand-tracked previous set.
 
 ## Quick reference
 

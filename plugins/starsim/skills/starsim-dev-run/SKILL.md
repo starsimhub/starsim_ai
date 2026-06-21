@@ -20,6 +20,19 @@ Starsim provides `ss.parallel()` and `ss.MultiSim` for running multiple simulati
 | `msim.plot()` | Plot individual or reduced results | -- |
 | `sc.parallelize()` | Parallelize arbitrary functions (from Sciris) | `func`, `iterkwargs` |
 
+## Parallelism only happens when you ask for it
+
+Building a list of sims, or a `MultiSim`, does **not** run anything — and looping `for sim in sims: sim.run()` runs them **serially** on one core. Sims run in parallel only when you call `ss.parallel(...)` or `MultiSim.run()` (which parallelizes by default). Two caveats: `debug=True` forces serial execution (use it to get readable tracebacks), and you must not nest parallelism — a `MultiSim` built *inside* a calibration `build_fn` needs `parallel=False` (see `starsim-dev-calibration`).
+
+```python
+# Serial -- one core, slow for many sims
+for sim in sims:
+    sim.run()
+
+# Parallel -- all cores
+msim = ss.parallel(sims)        # or: ss.MultiSim(sims).run()
+```
+
 ## Patterns
 
 ### Running different scenarios with ss.parallel()

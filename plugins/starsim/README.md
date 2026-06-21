@@ -5,7 +5,7 @@ A Claude Code plugin that provides Starsim and Sciris MCP tools and modeling ski
 ## What's included
 
 - **MCP servers** - Connects to the hosted Starsim and Sciris documentation servers, giving Claude access to up-to-date API docs and examples.
-- **starsim-dev skills** - 16 topic-specific skills for Starsim development (diseases, networks, interventions, calibration, etc.) plus a router skill that dispatches to the right one.
+- **starsim-dev skills** - 17 topic-specific skills for Starsim development (diseases, networks, interventions, calibration, profiling, debugging, etc.) plus a router skill that dispatches to the right one.
 - **starsim-style skills** - 4 skills covering Starsim code style, documentation, testing, and design philosophy.
 - **sciris-utilities skill** - Activates when using Sciris utilities (file I/O, parallelization, data structures, etc.).
 - **stisim-modeling skill** - Activates when building STIsim simulations (HIV, syphilis, chlamydia, etc.).
@@ -71,7 +71,9 @@ plugins/starsim/
 │   ├── starsim-dev-nonstandard/
 │   │   └── SKILL.md                 # Compartmental/ODE and general ABMs
 │   ├── starsim-dev-profiling/
-│   │   └── SKILL.md                 # Performance profiling and debugging
+│   │   └── SKILL.md                 # Performance profiling
+│   ├── starsim-dev-debugging/
+│   │   └── SKILL.md                 # Debugging errors and wrong results
 │   ├── starsim-style-python/
 │   │   └── SKILL.md                 # Python code style
 │   ├── starsim-style-docs/

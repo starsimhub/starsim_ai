@@ -1,11 +1,13 @@
 ---
 name: starsim-dev-profiling
-description: Use when profiling or debugging Starsim simulation performance — including line profiling, execution loop inspection, and custom probes.
+description: Use when profiling Starsim simulation performance — including line profiling, finding bottleneck functions, execution loop inspection, and custom probes. For errors, crashes, or wrong results, use starsim-dev-debugging instead.
 ---
 
-# Profiling and Debugging
+# Profiling and Performance
 
-Starsim includes built-in profiling tools to identify slow modules and bottleneck functions. It also exposes the internal execution loop (`sim.loop`) for debugging step order, inserting custom probes, and visualizing how modules with different timesteps interleave.
+Starsim includes built-in profiling tools to identify slow modules and bottleneck functions. It also exposes the internal execution loop (`sim.loop`) for inspecting step order, inserting custom probes, and visualizing how modules with different timesteps interleave.
+
+This skill focuses on **performance** (making a slow sim faster). For **correctness** debugging — exceptions, crashes, or implausible results — use `starsim-dev-debugging`. The two overlap on tools like `sim.loop` and probes, which are useful for both.
 
 ## Key Tools
 

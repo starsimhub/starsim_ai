@@ -306,6 +306,22 @@ posterior_indices = np.random.choice(N, size=K, replace=True, p=weights)
 
 ## Anti-patterns
 
+**Use `ss.Calibration`, not raw Optuna.** Starsim's `ss.Calibration` wraps Optuna and handles trial management, reseeding, parallel workers, likelihood components, and conformers for you. Hand-rolling an Optuna `study.optimize(objective)` loop around `sim.run()` reimplements all of this, usually incorrectly (e.g. missing reseeding, mis-signed objectives). Reach for raw Optuna only for the Bayesian/SIR workflow shown above, which deliberately manages the loop externally.
+
+**In `build_fn`, rebuild module instances rather than mutating standardized pars.** A module's `__init__` standardizes its inputs — wrapping `beta` as a `TimePar`, locking Bernoulli distributions, validating data. Reassigning a raw value to an already-built module (`sir.pars.beta = v`) can bypass that standardization. The robust pattern is to construct fresh modules from the trial values and attach them to the uninitialized sim:
+
+```python
+def build_sim(sim, calib_pars, **kwargs):
+    v = {k: p['value'] for k, p in calib_pars.items()}
+    sim.pars.diseases = ss.SIR(beta=v['beta'], init_prev=ss.bernoulli(v['init_prev']))
+    sim.pars.networks = ss.RandomNet(n_contacts=ss.poisson(v['n_contacts']))
+    return sim
+```
+
+This guarantees each trial gets a clean, fully-standardized module — important when the module does nontrivial setup in `__init__` (e.g. reading/standardizing calibration data).
+
+**Give Optuna a data-driven warm start via `guess`.** Stochastic calibrations often fail to converge from arbitrary starting points. Set each parameter's `guess` to a value informed by the data (e.g. a rough prevalence-implied `beta`); a good warm start dramatically improves convergence even though Optuna does not treat `guess` as a hard constraint.
+
 **Do not forget `log=True` for multiplicative parameters.** Parameters like `beta` have multiplicative effects: doubling from 0.01 to 0.02 has a much larger impact than 0.11 to 0.12. Always set `log=True` so Optuna searches on a log scale.
 
 **Do not modify initialized objects in `build_fn`.** The sim passed to `build_fn` has NOT been initialized. Modify `sim.pars.diseases`, `sim.pars.networks`, etc. -- not runtime objects. For example, use `sim.pars.diseases.pars['beta'] = ss.perday(v)`, not `sim.diseases.sir.beta = v`.

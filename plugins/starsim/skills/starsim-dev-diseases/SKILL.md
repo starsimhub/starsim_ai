@@ -410,6 +410,10 @@ Results have a `.timevec` attribute for the time axis and can be used directly i
 
 **Do not forget `return` at the end of `__init__`.** While Python does not require an explicit return in `__init__`, Starsim's convention includes it for clarity, and some internal tooling may rely on it.
 
+**Use `self.ti` and `self.now`, not `self.sim.t.ti`.** Every module exposes its own timestep accessors: `self.ti` (timestep index), `self.now` (current date/time), and `self.dt`. Reach through `self.sim` only for things the module does not own (e.g. `self.sim.people`, `self.sim.diseases.other`).
+
+**Use `init_post(self)` for init logic, not `initialize(self, sim)`.** If a disease needs setup after the sim is built, override `init_post(self)` (call `super().init_post()` first); `self.sim` is already linked, so it takes no `sim` argument. There is no `initialize(self, sim)` hook and no need for `setattribute`.
+
 ## Quick reference
 
 ```text
