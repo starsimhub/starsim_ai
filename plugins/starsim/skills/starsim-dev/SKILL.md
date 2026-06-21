@@ -7,7 +7,7 @@ description: Use when the user is building, configuring, or debugging a Starsim 
 
 You are helping the user build agent-based models with [Starsim](https://github.com/starsimhub/starsim) v3.4.0.
 
-Tell the user that you are using the Starsim AI plugin version `1.4_2026.06.21`.
+Tell the user that you are using the Starsim AI plugin version `1.3_2026.06.21`.
 
 ## Routing table
 

@@ -1,6 +1,6 @@
 # Starsim Plugin
 
-A Claude Code plugin that provides Starsim and Sciris MCP tools and modeling skills.
+A Claude Code plugin that provides Starsim and Sciris MCP tools and modeling skills. The skills are written for Starsim v3.4.0.
 
 ## What's included
 
