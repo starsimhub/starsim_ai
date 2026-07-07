@@ -7,14 +7,26 @@ deterministic, pattern-matchable mistakes documented in
 non-blocking advisory back to Claude via ``additionalContext`` so the model can
 self-correct at the moment the code is written — it never blocks the edit.
 
+The hook is deliberately narrow so it only speaks up when relevant:
+
+* **Scoped to Starsim projects.** It stays silent unless the edited file
+  imports ``starsim`` or sits under a project manifest that names ``starsim``
+  as a dependency — so editing unrelated Python elsewhere never triggers it.
+* **Scoped to real code.** Comments and string literals are blanked out before
+  matching, so an anti-pattern mentioned in a docstring or ``# comment`` does
+  not fire.
+
 Each rule's ``id`` matches a row in the anti-patterns reference; keep them in sync.
 The hook is intentionally fail-open: any error, non-Python file, or absent match
 results in a clean (silent) exit so it can never disrupt a normal edit.
 """
 
+import io
 import json
+import os
 import re
 import sys
+import tokenize
 
 # (id, compiled regex, message). Ordered high-confidence first.
 # `id` mirrors skills/starsim-dev/starsim-antipatterns.md.
@@ -75,6 +87,85 @@ def extract_new_text(tool_name, tool_input):
     return ""
 
 
+_IMPORT_RE = re.compile(r"^\s*(?:import\s+starsim|from\s+starsim\b)", re.M)
+_MANIFESTS = ("pyproject.toml", "setup.cfg", "setup.py", "requirements.txt")
+
+
+def is_starsim_context(file_path, cwd):
+    """True if the edit is part of a Starsim project.
+
+    Checks, in order: does the edited file import ``starsim``; then does any
+    project manifest (``pyproject.toml`` etc.) walking up from the file — or the
+    working directory — name ``starsim``. Silent (False) when no signal is found,
+    which is the point: the hook should only speak up on Starsim code.
+    """
+    # 1. Strongest signal: the file itself imports starsim. Read from disk —
+    #    PostToolUse runs after the write, so the full file (not just the diff)
+    #    is available, which matters for Edits that don't touch the import line.
+    try:
+        with open(file_path, encoding="utf-8") as f:
+            if _IMPORT_RE.search(f.read()):
+                return True
+    except Exception:
+        pass
+
+    # 2. Walk up from the file's directory (and cwd) for a manifest naming starsim.
+    start_dirs = []
+    for p in (file_path, cwd):
+        if not p:
+            continue
+        p = os.path.abspath(p)
+        start_dirs.append(os.path.dirname(p) if os.path.splitext(p)[1] else p)
+
+    seen = set()
+    for d in start_dirs:
+        while d and d not in seen:
+            seen.add(d)
+            for m in _MANIFESTS:
+                mp = os.path.join(d, m)
+                if os.path.isfile(mp):
+                    try:
+                        with open(mp, encoding="utf-8") as f:
+                            if re.search(r"\bstarsim\b", f.read(), re.I):
+                                return True
+                    except Exception:
+                        pass
+            parent = os.path.dirname(d)
+            if parent == d:
+                break
+            d = parent
+    return False
+
+
+def strip_noncode(text):
+    """Blank out comments and string literals so matches only hit real code.
+
+    Token spans are overwritten with spaces in place (newlines preserved) so
+    code positions are unchanged and patterns like ``np.random`` still match.
+    Falls back to a naive line-comment strip if the fragment won't tokenize.
+    """
+    try:
+        line_start = [0]
+        for ln in text.splitlines(keepends=True):
+            line_start.append(line_start[-1] + len(ln))
+
+        def offset(row, col):
+            return line_start[row - 1] + col
+
+        buf = list(text)
+        for tok in tokenize.generate_tokens(io.StringIO(text).readline):
+            name = tokenize.tok_name[tok.type]
+            if tok.type in (tokenize.COMMENT, tokenize.STRING) or name.startswith("FSTRING"):
+                s = offset(tok.start[0], tok.start[1])
+                e = offset(tok.end[0], tok.end[1])
+                for i in range(s, min(e, len(buf))):
+                    if buf[i] != "\n":
+                        buf[i] = " "
+        return "".join(buf)
+    except Exception:
+        return "\n".join(line.split("#", 1)[0] for line in text.splitlines())
+
+
 def main():
     try:
         payload = json.load(sys.stdin)
@@ -83,14 +174,22 @@ def main():
 
     tool_name = payload.get("tool_name", "")
     tool_input = payload.get("tool_input", {}) or {}
+    cwd = payload.get("cwd", "") or ""
 
     file_path = tool_input.get("file_path", "") or ""
     if not file_path.endswith(".py"):
         return
 
+    # Scope to Starsim projects only — stay silent on unrelated Python.
+    if not is_starsim_context(file_path, cwd):
+        return
+
     text = extract_new_text(tool_name, tool_input)
     if not text:
         return
+
+    # Scope to real code — don't match anti-patterns named in comments/strings.
+    text = strip_noncode(text)
 
     findings = []
     for rule_id, pattern, message in RULES:
@@ -103,8 +202,7 @@ def main():
     advisory = (
         "Starsim anti-pattern check flagged the edit to "
         f"`{file_path}`:\n" + "\n".join(findings) + "\n\nReview these before "
-        "continuing; fix any that apply. (Matches may include comments/strings — "
-        "use judgment.)"
+        "continuing; fix any that apply."
     )
 
     print(
