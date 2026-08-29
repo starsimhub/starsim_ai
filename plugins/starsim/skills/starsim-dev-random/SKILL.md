@@ -14,7 +14,7 @@ For technical details, see: [Klein et al., "Noise-free comparison of stochastic 
 | Concept | Description |
 |---------|-------------|
 | CRN (Common Random Numbers) | Each agent gets the same random draw for the same decision across simulations, regardless of what other agents do. Enabled by default. |
-| `ss.options.single_rng` | When `False` (default), CRN is active with per-agent streams. When `True`, all agents share one PRNG (legacy mode, stochastic branching occurs). |
+| `ss.options.crn` | When `True` (default), CRN is active with per-agent streams. When `False`, the per-agent slot machinery is skipped: faster (~1.2-1.3x), statistically valid, but not CRN-safe across scenarios, so stochastic branching occurs. |
 | Stochastic branching | The problem CRN solves: with a single PRNG, removing or adding one agent shifts the random number sequence for all subsequent agents. |
 | `rand_seed` | Sim-level seed for reproducibility. Same seed + same config = identical results. |
 | `dist.rvs(uids)` | Draw random values for specific agents identified by UIDs. CRN ensures agent N always gets the same draw for this distribution. |
@@ -30,7 +30,7 @@ CRN is the default behavior. You only need to take action if you want to disable
 ```python
 import starsim as ss
 
-# CRN is active by default (ss.options.single_rng = False)
+# CRN is active by default (ss.options.crn = True)
 sim = ss.Sim(diseases='sir', networks='random', rand_seed=42)
 sim.run()
 ```
@@ -64,13 +64,13 @@ class Fishing(ss.Module):
         return
 ```
 
-Without CRN (`single_rng=True`), banning agent 0 changes which random numbers every other agent receives, producing nonsensical differences. With CRN (default), banning agent 0 only affects agent 0 -- all other agents behave identically.
+Without CRN (`ss.options.crn = False`), banning agent 0 changes which random numbers every other agent receives, producing nonsensical differences. With CRN (default), banning agent 0 only affects agent 0 -- all other agents behave identically.
 
 ```python
 pars = dict(n_agents=20, start=ss.days(0), dur=ss.days(1), rand_seed=42)
 
 # WITHOUT CRN -- demonstrates the stochastic branching problem
-ss.options.single_rng = True
+ss.options.crn = False
 simA = ss.Sim(modules=Fishing(), **pars)
 simA.run()
 simB = ss.Sim(modules=Fishing(banned_uids=[0]), **pars)
@@ -78,7 +78,7 @@ simB.run()
 # Result: Different agents catch fish in A vs B -- wrong!
 
 # WITH CRN (default) -- correct behavior
-ss.options.single_rng = False
+ss.options.crn = True
 simA = ss.Sim(modules=Fishing(), **pars)
 simA.run()
 simB = ss.Sim(modules=Fishing(banned_uids=[1]), **pars)
@@ -274,24 +274,26 @@ values = self.dist.rvs(all_uids)
 
 Beyond being slow, per-agent loops can disrupt CRN ordering. Always batch into a single vectorized call.
 
-### WRONG: Set `single_rng = True` without a specific reason
+### WRONG: Set `ss.options.crn = False` without a specific reason
 
 ```python
 # WRONG -- disables CRN, reintroduces stochastic branching
-ss.options.single_rng = True
+ss.options.crn = False
 
-# CORRECT -- leave the default (False) for CRN
-# ss.options.single_rng = False  # this is the default
+# CORRECT -- leave the default (True) for CRN
+# ss.options.crn = True  # this is the default
 ```
 
-The only reason to set `single_rng = True` is for benchmarking or demonstrating the stochastic branching problem.
+Disabling CRN is ~1.2-1.3x faster, so it is defensible when performance matters and the sim is already not CRN-safe (e.g. it uses `ss.RandomNet`, which is not random-number safe), or for benchmarking and demonstrating the stochastic branching problem. It is not safe for comparing counterfactual scenarios.
+
+> **Migration (Starsim v3.5.0):** the old `ss.options.single_rng` option was removed. Use `ss.options.crn` instead, noting the reversed polarity: `single_rng=True` becomes `crn=False`.
 
 ## Quick Reference
 
 | Task | Code |
 |------|------|
-| Check CRN is enabled | `assert ss.options.single_rng == False` |
-| Disable CRN (legacy mode) | `ss.options.single_rng = True` |
+| Check CRN is enabled | `assert ss.options.crn == True` |
+| Disable CRN (faster, not CRN-safe) | `ss.options.crn = False` |
 | Create Bernoulli distribution | `ss.bernoulli(p=0.3)` |
 | Create lognormal distribution | `ss.lognorm_ex(mean=5, std=1)` |
 | Draw values for agents | `dist.rvs(uids)` |

@@ -15,6 +15,7 @@ Diseases are the cornerstone of almost any Starsim analysis. Starsim provides bu
 | `ss.Infection` | `ss.Disease` | Yes (via `infect()`) | All communicable/infectious diseases |
 | `ss.SIR` | `ss.Infection` | Yes | Susceptible-Infected-Recovered model |
 | `ss.SIS` | `ss.Infection` | Yes | Susceptible-Infected-Susceptible model (no lasting immunity) |
+| `ss.SEIR` | `ss.SIR` | Yes | Susceptible-Exposed-Infectious-Recovered model (adds a latent, non-infectious period) |
 
 Almost all diseases should inherit from `ss.Infection` or one of its subclasses like `ss.SIR`. Only use `ss.Disease` directly for non-communicable conditions that do not spread between agents. `ss.Infection` handles network-based transmission automatically -- it loops over agents in each network, applies network- and disease-specific betas, and manages per-agent susceptibility and transmissibility multipliers. This means you almost never need to write your own transmission logic.
 
@@ -27,9 +28,13 @@ The typical inheritance path for a custom communicable disease is: inherit from 
 | `define_pars()` | Declare disease parameters with defaults | Always, in `__init__` for custom diseases |
 | `update_pars()` | Apply user-supplied parameter overrides | Always, in `__init__` after `define_pars` |
 | `define_states()` | Initialize disease states (BoolState, FloatArr) | Always for custom diseases adding new states |
-| `set_prognoses(uids, sources)` | Set outcomes for newly infected agents | Almost always for custom diseases |
+| `set_prognoses(uids, sources)` | Set outcomes for newly infected agents; calls `set_infection()` then `set_progression()` | When you need to change both at once |
+| `set_infection(uids)` | Make the agents infected/infectious right now | To delay infectiousness (as `ss.SEIR` does) |
+| `set_progression(uids)` | Schedule recovery, death, and any later stages | To add or reschedule downstream stages |
+| `clear_infection(uids)` | Clear the infection states on recovery or death | When `infected` is derived rather than a plain state |
 | `step_state()` | Update state transitions each timestep | When adding new state transitions |
 | `step_die(uids)` | Handle agent deaths (reset custom states) | When disease has custom states |
+| `define_aliases()` | Define a state name that resolves to another state or a callable | To derive a compartment from others |
 | `infect()` | Handle transmission logic | **Rarely** -- use the built-in version |
 
 ### Method call order during a timestep
@@ -42,6 +47,13 @@ Each simulation timestep, the disease methods are called in this order:
 4. `step_die(uids)` -- called for agents who die this timestep; resets disease states so dead agents are cleaned up properly
 
 Understanding this order is critical: `set_prognoses` is forward-looking (it schedules future events using `ti_*` timing arrays), while `step_state` is the executor that checks those scheduled times against the current timestep and performs the transitions.
+
+Since Starsim v3.6.0, `ss.SIR.set_prognoses()` splits into two overridable halves, so a subclass can change one without reimplementing the other:
+
+- `set_infection(uids)` -- make the agents infected/infectious now (this is what `ss.SEIR` delays by the latent period).
+- `set_progression(uids)` -- schedule recovery, death, and any further stages, relative to the onset of infectiousness.
+
+**Migration:** an `ss.Infection` subclass that overrides `set_prognoses()` must call `super().set_prognoses(uids, sources)`. Since v3.6.0 the base class records `new_infections` as infections happen rather than reconstructing them afterwards from `ti_infected`, so an override that skips `super()` leaves `new_infections`, `cum_infections` and `incidence` permanently zero.
 
 ## Built-in diseases
 
@@ -81,6 +93,44 @@ sim.run()
 sim.plot()
 ```
 
+### The disease library (`ss.library`)
+
+Beyond the templates above, Starsim ships a library of specific diseases and networks. As of v3.5.0 its contents are exported at the library's top level, so either path works:
+
+```python
+import starsim.library as ssl
+
+ssl.Measles()                     # Or ss.library.Measles(), or ss.library.diseases.Measles()
+ss.library.HouseholdNet()         # Or ss.library.networks.HouseholdNet()
+```
+
+Note these are not exported into the `ss` namespace itself — `ss.Measles` does not exist. `ssl.Measles`, `ssl.Cholera` and `ssl.Ebola` all subclass `ss.SEIR` as of v3.6.0.
+
+### SEIR and the infected/infectious distinction
+
+`ss.SEIR` extends `ss.SIR` with a latent, non-infectious exposed state:
+
+```python
+seir = ss.SEIR(beta=ss.peryear(0.5), dur_exp=ss.years(1), dur_inf=ss.years(2))
+sim = ss.Sim(n_agents=2_000, diseases=seir, networks='random')
+sim.run()
+```
+
+Its compartment naming is the part to get right, and it applies to any latent-period model:
+
+| Attribute | Meaning |
+|-----------|---------|
+| `exposed` | The literal E compartment: infected but **not** transmitting |
+| `infectious` | The literal I compartment: currently transmitting |
+| `infected` | Derived as E plus I — "has the infection", whether or not yet transmitting |
+| `ti_exposed` | Time of acquisition |
+| `ti_infectious` | Time of becoming infectious |
+| `ti_infected` | **Not defined** for `ss.SEIR` — accessing it raises `AttributeError`, since it is too easily confused with `ti_infectious` |
+
+So `n_infected` and `prevalence` include latent infections, while transmission depends on `infectious` alone. For `ss.SIR` the two coincide, and `infectious` is simply an alias of `infected`.
+
+**Migration (v3.6.0):** in `ss.SEIR` and its library subclasses (`ssl.Measles`, `ssl.Cholera`, `ssl.Ebola`), code that read `infected`/`n_infected` to mean "currently transmitting" must use `infectious`/`n_infectious`, and code that scheduled events off `ti_infected` must use `ti_infectious` (or `ti_exposed` for the time of acquisition). `ssl.Cholera.dur_exp2inf` and `ssl.Ebola.dur_exp2symp` are both now `dur_exp`.
+
 ## Implementation patterns
 
 ### Pattern 1: Extending an existing disease
@@ -110,100 +160,89 @@ class MyCustomSIR(ss.SIR):
 
 The pattern is always: call `super().__init__()` first, then `define_pars()`, then `update_pars()`. This ensures the parent class sets up its internal structures before you add to them, and that user-supplied parameter values override your defaults.
 
-### Pattern 2: Adding new states (full SEIR example)
+### Pattern 2: Adding new states (SIRS with waning immunity)
 
-This is the complete, working SEIR implementation that adds an "exposed" (incubation) state to the SIR model. Exposed agents are infected and transmitting but have not yet progressed to the symptomatic infected state. This is one of the most common customizations in epidemiological modeling.
+`ss.SEIR` is built in as of Starsim v3.6.0 — do not hand-roll one (see [SEIR and the infected/infectious distinction](#seir-and-the-infectedinfectious-distinction) below). The worked example here is an SIRS model, which adds waning immunity so recovered agents return to susceptible. It shows the general shape of adding a state and a transition: a new parameter, a new `ti_` array, a `set_progression()` override to schedule the transition, and a `step_state()` override to execute it.
 
 ```python
 import starsim as ss
-import matplotlib.pyplot as plt
 
-class SEIR(ss.SIR):
-    def __init__(self, pars=None, *args, **kwargs):
+class SIRS(ss.SIR):
+    """ SIR with waning immunity: recovered agents return to susceptible """
+    def __init__(self, pars=None, dur_imm=None, **kwargs):
         super().__init__()
         self.define_pars(
-            dur_exp=ss.lognorm_ex(0.5),  # Duration of exposed period
+            dur_imm = ss.lognorm_ex(mean=ss.years(2)),  # How long immunity lasts
         )
-        self.update_pars(pars, **kwargs)
-
-        # Additional states beyond the SIR ones
+        self.update_pars(pars, dur_imm=dur_imm, **kwargs)
         self.define_states(
-            ss.BoolState('exposed', label='Exposed'),
-            ss.FloatArr('ti_exposed', label='Time of exposure'),
+            ss.FloatArr('ti_susceptible', label='Time of return to susceptible'),
         )
+        return
 
-    @property
-    def infectious(self):
-        """Both exposed and infected agents can transmit."""
-        return self.infected | self.exposed
+    def set_progression(self, uids):
+        """ Schedule recovery/death as usual, then schedule loss of immunity """
+        super().set_progression(uids)
+        rec = uids[self.ti_recovered.notnan[uids]]  # Agents who will recover rather than die
+        self.ti_susceptible[rec] = self.ti_recovered[rec] + self.pars.dur_imm.rvs(rec)
+        return
 
     def step_state(self):
-        """Perform SIR updates, then progress exposed -> infected."""
-        # Call parent to handle infected -> recovered and infected -> dead
+        """ Do the usual SIR transitions, then wane immunity """
         super().step_state()
-
-        # Progress exposed -> infected when their scheduled time arrives
-        infected = self.exposed & (self.ti_infected <= self.ti)
-        self.exposed[infected] = False
-        self.infected[infected] = True
-
-    def step_die(self, uids):
-        """Reset exposed state for dying agents."""
-        super().step_die(uids)
-        self.exposed[uids] = False
-
-    def set_prognoses(self, uids, sources=None):
-        """Schedule state transitions for newly infected agents."""
-        super().set_prognoses(uids, sources)
-        ti = self.ti
-
-        # New agents enter exposed state (not directly infected)
-        self.susceptible[uids] = False
-        self.exposed[uids] = True
-        self.ti_exposed[uids] = ti
-
-        # Schedule future transitions with proper timing
-        p = self.pars
-        dur_exp = p.dur_exp.rvs(uids)         # Draw exposure durations
-        self.ti_infected[uids] = ti + dur_exp  # When they become infected
-
-        dur_inf = p.dur_inf.rvs(uids)         # Draw infection durations
-        will_die = p.p_death.rvs(uids)        # Determine who dies
-        self.ti_recovered[uids[~will_die]] = ti + dur_inf[~will_die]
-        self.ti_dead[uids[will_die]] = ti + dur_inf[will_die]
-
-    def plot(self):
-        """Extend the default SIR plot with the exposed compartment."""
-        with ss.options.context(show=False):
-            fig = super().plot()
-            ax = plt.gca()
-            res = self.results.n_exposed
-            ax.plot(res.timevec, res, label=res.label)
-            plt.legend()
-        return ss.return_fig(fig)
+        waned = (self.recovered & (self.ti_susceptible <= self.ti)).uids
+        self.recovered[waned] = False
+        self.susceptible[waned] = True
+        return
 
 
 # Usage
-seir = SEIR()
-sim = ss.Sim(diseases=seir, networks='random')
+sirs = SIRS(beta=ss.peryear(0.3), dur_inf=ss.years(1), p_death=0.05, dur_imm=ss.years(3))
+sim = ss.Sim(n_agents=2_000, dur=ss.years(30), diseases=sirs, networks='random')
 sim.run()
 sim.plot()                   # Default sim-level plot
-sim.diseases.seir.plot()     # Disease-specific plot with exposed line
+sim.diseases.sirs.plot()     # Disease-specific plot
 ```
 
-Key design decisions in the SEIR example explained in detail:
+Key design decisions:
 
-1. **`__init__`**: Calls `super().__init__()` first, then adds `dur_exp` parameter via `define_pars` and the `exposed`/`ti_exposed` states via `define_states`. The parent `ss.SIR.__init__` already sets up `susceptible`, `infected`, `recovered`, `ti_infected`, `ti_recovered`, `ti_dead`, etc.
+1. **`__init__`**: Calls `super().__init__()` first, then adds `dur_imm` via `define_pars` and `ti_susceptible` via `define_states`. The parent `ss.SIR.__init__` already sets up `susceptible`, `infected`, `recovered`, `ti_infected`, `ti_recovered`, `ti_dead`, etc.
 
-2. **`infectious` property**: Returns `self.infected | self.exposed`, a boolean array union. The built-in `infect()` method queries `self.infectious` to determine which agents can transmit. By including exposed agents here, the existing transmission machinery automatically handles them without any changes to `infect()`.
+2. **`set_progression`** (not `set_prognoses`): calls `super()` to get the usual recovery/death scheduling, then schedules the extra stage on top. Only agents who will recover get a `ti_susceptible`; those scheduled to die keep `nan`, so they never wane.
 
-3. **`step_state`**: Calls `super().step_state()` first so that the SIR transitions (infected-to-recovered, infected-to-dead) happen normally. Then it checks for exposed agents whose `ti_infected` has arrived and transitions them to infected. The check `self.ti_infected <= self.ti` compares the scheduled infection time against the current simulation time.
+3. **`step_state`**: calls `super().step_state()` so the SIR transitions happen normally, then moves agents whose immunity has expired back to susceptible. `(...).uids` converts the boolean mask to UIDs — never use `np.where`.
 
-4. **`step_die`**: Resets the `exposed` boolean state for dying agents. This is mandatory -- without it, dead agents would still appear as "exposed" in result counts.
+4. **`step_die`** is not overridden here, because no new *boolean* state was added; `ss.SIR.step_die()` already clears `susceptible`, `recovered` and the infection. Add an override as soon as you add a `BoolState` (see Pattern 3).
 
-5. **`set_prognoses`**: This is the most complex override. It calls `super().set_prognoses()` first (which sets up the default SIR timing), then overwrites the timing to insert the exposure period. Newly infected agents enter the `exposed` state immediately, and `ti_infected` is set to `ti + dur_exp` (current time plus a random exposure duration). The recovery and death times are drawn from `dur_inf` and `p_death` distributions.
+5. **Plotting**: `sim.diseases.sirs.plot()`, not `sirs.plot()` — the sim copies its modules at initialization, so the original object has no results. To show extra compartments, set the `plot_states` class attribute (see Pattern 4).
 
-6. **`plot`**: Uses `ss.options.context(show=False)` to suppress immediate display, calls `super().plot()` to get the base SIR figure, then adds the exposed compartment line from `self.results.n_exposed`. The `ss.return_fig(fig)` call ensures proper display handling.
+### Pattern 2b: State aliases
+
+`define_aliases()` (v3.6.0) defines a state name that resolves to something else — either the name of another state, or a callable that derives it:
+
+```python
+self.define_aliases(infectious='infected')                                  # Alias of another state
+self.define_aliases(asymptomatic=lambda self: self.infected & ~self.symptomatic)  # Derived, recomputed on access
+```
+
+A callable alias behaves like a read-only property: it is recomputed on each access, cannot be written to (assigning to it raises), and automatically generates an `n_<name>` result, just as a `BoolState` does. A string alias does not, since the state it points to is already counted under its own name. An alias is only consulted if the attribute isn't otherwise defined, so a subclass overrides it just by defining a state of the same name. Note that a lambda alias can't be saved with plain `pickle` (`sc.save()` and `ss.MultiSim` use `dill`, so they are fine) — use a module-level function or a property if plain pickling is required.
+
+Any keyword arguments to `define_states()` other than `reset`, `lock` and `overwrite` are passed through to `define_aliases()`, which is how `ss.SEIR` derives `infected` from its two compartments:
+
+```python
+self.define_states(
+    ss.BoolState('exposed', label='Exposed'),
+    ss.BoolState('infectious', label='Infectious'),
+    ss.FloatArr('ti_exposed', label='Time of exposure'),
+    ss.FloatArr('ti_infectious', label='Time of becoming infectious'),
+    reset = ['infected', 'infectious', 'ti_infected'],  # Drop the inherited SIR versions
+    infected = lambda self: self.exposed | self.infectious,
+)
+```
+
+`define_states(reset=...)` accepts a state or alias name (or a list of them) as well as `True`, so a subclass can replace or remove individual inherited states rather than all of them; removing a name without replacing it leaves it undefined, which is how `ss.SEIR` drops `ti_infected`.
+
+**Migration (v3.6.0):** `define_states(check=False)` is replaced by `define_states(overwrite=True)`. `check=False` never actually replaced anything — it skipped the duplicate check but still appended, so initialization later failed with `Another result named "n_infected" already exists`. Also, `ss.Infection.infectious` is no longer a property but an alias of `infected`; reading it is unchanged, and overriding it with a property still works.
 
 ### Pattern 3: Custom death handling
 
@@ -222,7 +261,14 @@ The `uids` argument contains the UIDs of agents dying this timestep (from any ca
 
 ### Pattern 4: Custom plotting
 
-Override `plot()` to add custom compartments to the default disease plot. The pattern uses `ss.options.context(show=False)` to prevent the parent plot from displaying prematurely, then adds lines and returns the figure via `ss.return_fig(fig)`:
+To show extra compartments on the default `ss.SIR`-style plot, set the `plot_states` class attribute (v3.6.0) — it lists which results `plot()` draws, so a subclass that adds a compartment needs one line rather than a `plot()` override:
+
+```python
+class MyDisease(ss.SIR):
+    plot_states = ['n_susceptible', 'n_infected', 'n_hospitalized', 'n_recovered']
+```
+
+This is how `ss.SEIR` shows its exposed compartment. Override `plot()` only when you need something the state list can't express (a second axis, shaded intervals, etc.). The pattern then uses `ss.options.context(show=False)` to prevent the parent plot from displaying prematurely, and returns the figure via `ss.return_fig(fig)`:
 
 ```python
 import matplotlib.pyplot as plt
@@ -391,18 +437,20 @@ sim.plot('sir')                 # Plot specific disease
 sim.diseases.sir.plot()         # Disease-specific plot method
 
 # Custom states are automatically tracked
-sim.results.seir.n_exposed      # Available if SEIR defined a BoolState('exposed')
+sim.results.seir.n_exposed      # Any BoolState (or callable alias) gets an n_<name> result
+sim.results.seir.n_infectious   # For ss.SEIR: the I compartment alone
+sim.results.seir.n_infected     # For ss.SEIR: E plus I (derived), as is prevalence
 ```
 
 Results have a `.timevec` attribute for the time axis and can be used directly in matplotlib calls or exported to numpy arrays.
 
 ## Anti-patterns
 
-**Do not override `infect()`.** The built-in `infect()` method on `ss.Infection` correctly handles looping over agents in each network, applying network- and disease-specific transmission probabilities, managing agent transmissibility and susceptibility via `rel_trans` and `rel_sus`, and mixing pool logic. Writing your own transmission logic is error-prone and unnecessary in nearly all cases. Instead, override the `infectious` property to control which agents can transmit.
+**Do not override `infect()`.** The built-in `infect()` method on `ss.Infection` correctly handles looping over agents in each network, applying network- and disease-specific transmission probabilities, managing agent transmissibility and susceptibility via `rel_trans` and `rel_sus`, and mixing pool logic. Writing your own transmission logic is error-prone and unnecessary in nearly all cases. To control which agents can transmit, define `infectious` as a state or alias of its own (as `ss.SEIR` does) rather than touching `infect()`.
 
 **Must override `step_die()` when adding custom boolean states.** If your disease defines additional `BoolState` attributes (e.g., `exposed`, `hospitalized`), you must reset them in `step_die(uids)` by calling `super().step_die(uids)` and then setting each custom state to `False` for the dying UIDs. Failing to do this means dead agents retain their disease flags, corrupting compartment counts and potentially causing downstream logic errors.
 
-**Include exposure duration in timing calculations.** When adding an exposed state in `set_prognoses`, the total time from acquisition to recovery or death must account for the full pathway. Schedule `ti_infected = ti + dur_exp` (when the agent becomes symptomatic/infectious), and compute recovery/death times based on the total disease duration. A common bug is to set `ti_recovered = ti_infected + dur_inf` without accounting for the exposure period, resulting in agents spending too long in the exposed state or recovering before they become infected.
+**Do not hand-roll a latent period.** Use `ss.SEIR`, or subclass it. If you do need a custom staged progression, split the work the way `ss.SIR` does — `set_infection()` for "the agent is infected now" and `set_progression()` for everything scheduled afterwards — and schedule the later stages from `ti_infectious`, not from the time of acquisition. The classic bug is `ti_recovered = ti_infected + dur_inf` in a model with a latent period: the latent period then eats into the infectious period rather than delaying it.
 
 **Inherit from `ss.Infection`, not `ss.Disease`.** Almost all communicable diseases need the transmission logic provided by `ss.Infection`. Only use `ss.Disease` directly for non-communicable conditions without person-to-person spread. In practice, most custom diseases should inherit from `ss.SIR` or `ss.SIS` rather than `ss.Infection` directly, to get built-in states, transitions, and result tracking for free.
 
@@ -421,6 +469,7 @@ Class hierarchy:
   ss.Disease                         # Base (no transmission)
     ss.Infection                     # Adds infect() and network transmission
       ss.SIR                         # S-I-R with beta, dur_inf, p_death, init_prev
+        ss.SEIR                      # S-E-I-R; adds dur_exp, exposed, infectious, ti_infectious
       ss.SIS                         # S-I-S (no recovered state, allows reinfection)
 
 State types:
@@ -431,15 +480,19 @@ Parameter management:
   self.define_pars(key=value, ...)   # Declare parameters with defaults in __init__
   self.update_pars(pars, **kwargs)   # Apply user overrides in __init__
 
-Key properties to override:
-  infectious                         # Property: BoolArr of who can transmit
+Aliases (define_aliases / define_states kwargs):
+  infectious = 'infected'            # String alias: resolves to another state
+  infected = lambda self: ...        # Callable alias: derived, read-only, gets n_infected
 
 Key methods to override:
   __init__(pars, **kwargs)           # Add pars via define_pars, states via define_states
-  set_prognoses(uids, sources)       # Schedule state transitions for new infections
+  set_infection(uids)                # Make agents infected/infectious now
+  set_progression(uids)              # Schedule recovery, death, and later stages
+  clear_infection(uids)              # Clear infection states on recovery/death
+  set_prognoses(uids, sources)       # Both of the above; call super() if overridden
   step_state()                       # Process scheduled transitions each timestep
   step_die(uids)                     # Reset custom boolean states on agent death
-  plot()                             # Custom visualization with additional compartments
+  plot_states = [...]                # Class attribute: which results plot() draws
 
 Accessing results:
   sim.results.<disease>.n_infected   # Infected count time series

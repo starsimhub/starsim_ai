@@ -162,6 +162,8 @@ sim.people.age[ss.uids([0, 1, 2])]
 
 Always use `ss.uids()` to convert a list of integers into a proper UID index.
 
+As of Starsim v3.5.2, `ss.uids()` validates its input and raises a `TypeError` on non-integers, rather than silently truncating: `ss.uids([1.5])` used to return `ss.uids([1])`, which was almost always a bug. Convert deliberately (e.g. `ss.uids(np.round(vals).astype(int))`) if you really do want the truncation.
+
 ### `.raw.mean()` includes dead agents
 
 ```python
@@ -299,6 +301,19 @@ if len(infected_uids) > 0:
     mean_age = sim.people.age[infected_uids].mean()
 ```
 
+### Comparing an array against multiple values: `isin()`
+
+`ss.Arr.isin()` (v3.5.1) replaces chained equality comparisons:
+
+```python
+# Verbose
+recent = (self.ti_infected == self.ti) | (self.ti_infected == self.ti - 1)
+
+# Better
+recent = self.ti_infected.isin([self.ti, self.ti - 1])
+recent_uids = recent.uids
+```
+
 ## Quick Reference
 
 | Task | Code |
@@ -314,6 +329,7 @@ if len(infected_uids) > 0:
 | UIDs where BoolState is True | `sim.people.female.uids` or `sim.people.female.true()` |
 | UIDs of agents in a disease state | `sim.diseases.sir.infected.uids` (NOT `infected[:]` or `int(infected)`) |
 | UIDs infected on the previous step | `(disease.ti_infected == self.ti - 1).uids` |
+| UIDs matching any of several values | `disease.ti_infected.isin([self.ti, self.ti-1]).uids` |
 | Access a state by name | `sim.people['age']`, `module['infected']` (not `getattr`) |
 | UIDs where BoolState is False | `sim.people.alive.false()` |
 | Intersect two UID sets | `uids_a.intersect(uids_b)` |

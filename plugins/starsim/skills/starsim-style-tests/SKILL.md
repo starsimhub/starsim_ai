@@ -158,6 +158,19 @@ for par, (lo, hi) in par_effects.items():
     assert v0 <= v1, f'Expected higher {par} to increase prevalence'
 ```
 
+### Regression baselines and Starsim versions
+
+Stored regression baselines are tied to a Starsim version. Several releases deliberately changed the exact stochastic realizations while leaving results statistically equivalent, so a baseline mismatch after upgrading is expected rather than a bug — regenerate it, and check the new values are *statistically* consistent rather than diffing them line by line:
+
+| Version | What changed the numbers |
+|---------|--------------------------|
+| v3.5.0 | Hash-based CRN replaced the old slot-oversampling scheme; `ss.RandomNet` became approximate; `ss.Pregnancy` default `slot_scale` 5 → 100 |
+| v3.5.1 | `ss.choice` moved to an inverse-CDF/hash path; `ss.library.HouseholdNet` move-out timing fix |
+| v3.5.2 | CRN precision now follows `ss.dtypes.float`, changing agent-indexed draws |
+| v3.6.0 | `ss.RandomNet` samples edge targets from sources; `ss.RandomSafeNet` forms edges between UIDs; `prevalence` and `cum_deaths` bugfixes; `ss.MFNet` timestep-unit fix |
+
+Genuine *bugfix* changes in that list (`prevalence`, `cum_deaths`, `ss.MFNet`, `ssl.Measles`) mean the old baseline was wrong, not just differently seeded. Distinguish the two before regenerating.
+
 ### Agent counts
 
 Use the smallest population that produces meaningful results:

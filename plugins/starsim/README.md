@@ -1,6 +1,6 @@
 # Starsim Plugin
 
-A Claude Code plugin that provides Starsim and Sciris MCP tools and modeling skills. The skills are written for Starsim v3.4.0.
+A Claude Code plugin that provides Starsim and Sciris MCP tools and modeling skills. The skills are written for Starsim v3.6.0.
 
 ## What's included
 
@@ -9,7 +9,7 @@ A Claude Code plugin that provides Starsim and Sciris MCP tools and modeling ski
 - **starsim-style skills** - 4 skills covering Starsim code style, documentation, testing, and design philosophy.
 - **sciris-utilities skill** - Activates when using Sciris utilities (file I/O, parallelization, data structures, etc.).
 - **stisim-modeling skill** - Activates when building STIsim simulations (HIV, syphilis, chlamydia, etc.).
-- **Anti-pattern hook** - A PostToolUse hook that scans Python you write for well-known Starsim mistakes (e.g. `np.random` instead of CRN, `np.where` instead of `state.uids`, `beta` wrapped in a rate) and nudges Claude to fix them. Non-blocking and fail-open; the checks are documented in `skills/starsim-dev/starsim-antipatterns.md`.
+- **Anti-pattern reference** - A canonical list of well-known Starsim mistakes (e.g. `np.random` instead of CRN, `np.where` instead of `state.uids`, `beta` wrapped in a rate) in `skills/starsim-dev/starsim-antipatterns.md`, which the `starsim-dev` router uses to dispatch to the right skill.
 
 ## Installation
 
@@ -38,9 +38,6 @@ plugins/starsim/
 ├── .claude/
 │   └── settings.local.json          # Plugin settings
 ├── .mcp.json                        # MCP server definitions (context7)
-├── hooks/
-│   ├── hooks.json                   # PostToolUse hook registration (auto-loaded)
-│   └── check_antipatterns.py        # Flags Starsim anti-patterns in edited Python
 ├── skills/
 │   ├── starsim-dev/
 │   │   ├── SKILL.md                 # Dev router — dispatches to topic skills

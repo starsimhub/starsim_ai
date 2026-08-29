@@ -15,16 +15,38 @@ This skill focuses on **performance** (making a slow sim faster). For **correctn
 |---------------|---------|-------------|
 | `sim.profile()` | Line-profile the full simulation run | First step when a sim is slow |
 | `sim.profile(follow=func)` | Profile a specific function in detail | Drill into a known bottleneck |
+| `sim.run(profile=True)` | Record per-loop-entry CPU timing | Find which *modules/steps* are slow, before drilling into lines |
 | `prof.disp(maxentries=N)` | Show top N entries from profiling results | Summarize profiling output |
 | `sim.loop.df` / `sim.loop.to_df()` | View execution plan as a DataFrame | Understand what runs and when |
 | `sim.loop.plot()` | Simple visual timeline of the loop | Quick overview of step order |
 | `sim.loop.plot_step_order()` | 3D plot of execution order | Multi-dt simulations |
-| `sim.loop.plot_cpu()` | CPU time per step (same as profile plot) | Identify slow steps visually |
+| `sim.loop.plot_cpu()` | CPU time per step (same as profile plot) | Identify slow steps visually; needs `run(profile=True)` |
 | `sim.loop.insert(func, label)` | Insert a probe function into the loop | Fine-grained debugging at exact positions |
 
 ## Profiling Workflow
 
 The typical profiling workflow is: (1) run `sim.profile()` to get the big picture, (2) inspect with `prof.disp()` to find the slowest functions, (3) drill into specific functions with `follow`, and (4) optimize the bottleneck code.
+
+**As of Starsim v3.6.0, `sim.run()` does not record per-entry CPU timings by default**, since most runs do not use them. Pass `sim.run(profile=True)` if you want them; without it, the `cpu_time` column of `sim.loop.to_df()` is all `nan` and `sim.loop.plot_cpu()` has nothing to show. The rest of the plan metadata (`to_df()`, `plot()`, `plot_step_order()`) is unaffected.
+
+```python
+sim = ss.Sim(diseases='sis', networks='random', dur=20)
+sim.run(profile=True)
+sim.loop.plot_cpu()          # Now populated
+sim.loop.to_df().cpu_time    # Per-entry CPU time
+```
+
+### Framework overhead and `people_results`
+
+Starsim v3.6.0 substantially reduced framework overhead, especially at initialization. If a lightweight sim is still dominated by overhead rather than by disease dynamics, the remaining lever is `people_results`:
+
+```python
+sim = ss.Sim(diseases='sir', networks='random', people_results=False)
+```
+
+This skips the automatic per-timestep People-level results, saving up to ~40% of runtime in a bare sim. Module dynamics are unaffected, but the People results are then unavailable — and some modules (demographics in particular) rely on `results.n_alive`, so this only works for some sims. Test that results are unchanged before keeping it.
+
+Disabling common random numbers (`ss.options.crn = False`) is a further ~1.2-1.3x, at the cost of CRN safety; see `starsim-dev-random` for when that trade is acceptable.
 
 ## Patterns
 
@@ -122,7 +144,7 @@ Starsim lets you insert arbitrary "probe" functions directly into the execution 
 
 ```python
 def check_pop_size(sim):
-    print(f'Population size is {len(sim.people)}')
+    print(f'Population size is {sim.people.n_alive}')
 
 sim = ss.Sim(diseases='sir', networks='random', demographics=True, dur=10)
 sim.init()
@@ -138,7 +160,7 @@ For many debugging tasks, an analyzer is simpler than a probe. Analyzers always 
 
 ```python
 def check_pop_size(sim):
-    print(f'Population size is {len(sim.people)}')
+    print(f'Population size is {sim.people.n_alive}')
 
 sim = ss.Sim(diseases='sir', networks='random', demographics=True, dur=10,
              analyzers=check_pop_size)
@@ -199,7 +221,7 @@ sim.loop.plot_step_order()  # 3D plot
 
 # Insert a probe
 def my_probe(sim):
-    print(f'N alive: {len(sim.people)}')
+    print(f'N alive: {sim.people.n_alive}')
 
 sim = ss.Sim(diseases='sir', networks='random', demographics=True, dur=10)
 sim.init()

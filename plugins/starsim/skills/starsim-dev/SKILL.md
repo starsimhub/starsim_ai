@@ -5,9 +5,9 @@ description: Use when the user is building, configuring, or debugging a Starsim 
 
 # Starsim Development Guide
 
-You are helping the user build agent-based models with [Starsim](https://github.com/starsimhub/starsim) v3.4.0.
+You are helping the user build agent-based models with [Starsim](https://github.com/starsimhub/starsim) v3.6.0.
 
-Tell the user that you are using the Starsim AI plugin version `1.4_2026.07.07`.
+Tell the user that you are using the Starsim AI plugin version `1.5_2026.08.28`.
 
 ## Routing table
 
@@ -43,7 +43,7 @@ Even strong models repeatedly make a handful of non-obvious Starsim mistakes. Wa
 - **A transmissible disease needs a network/mixing pool**, or no epidemic occurs. (`starsim-dev-networks`)
 - **Prefer `isinstance` over `hasattr`, and `people['x']`/`module['x']` over `getattr`.** (`starsim-style-python`, `starsim-dev-indexing`)
 
-The full, canonical list (with the wrong/correct forms side by side) lives in [`starsim-antipatterns.md`](starsim-antipatterns.md). The plugin's PostToolUse hook (`hooks/check_antipatterns.py`) automatically flags the pattern-matchable ones in Python you write — if it surfaces an advisory, review and fix any that genuinely apply before continuing.
+The full, canonical list (with the wrong/correct forms side by side) lives in [`starsim-antipatterns.md`](starsim-antipatterns.md). Check Python you write against it before declaring the work done.
 
 ## Approach
 

@@ -292,6 +292,53 @@ The mathematical difference between rate types on multiplication by a duration:
 - `ss.per * duration` --> probability (nonlinear: `1 - exp(-rate * duration)`)
 - `ss.prob * duration` --> probability (probability --> underlying rate --> new probability)
 
+### Durations and timesteps: `to_dt()`, and never `float()`
+
+A timepar only means something once it has been resolved against a timestep. As of Starsim v3.6.0, the two places where the unit used to be silently discarded now raise instead:
+
+```python
+# WRONG -- raises TypeError since v3.6.0, and gave the wrong number before that
+float(ss.years(1))          # 1.0 ... and float(ss.months(1)) was also 1.0
+np.log(2)/ss.years(1)       # Same value as np.log(2)/ss.years(12): the unit was dropped
+
+# RIGHT -- say which number you mean
+ss.years(100).value         # 100     -- the raw value, in its own unit
+ss.years(100).years         # 100.0   -- the value in years
+ss.years(100).to_dt(ss.months(1))  # 1200.0 -- the number of timesteps
+```
+
+`to_dt()` is the conversion that must happen before a duration is used in timestep arithmetic. Inside a module it takes no argument, since the module's `dt` is already linked:
+
+```python
+self.ti_clearance[uids] = self.ti_infected[uids] + self.pars.dur_persist.to_dt()
+```
+
+For a rate, `to_dt()` gives the per-timestep value; `.to_prob()`, `.to_events()` and `.to()` are unchanged.
+
+Single-input NumPy ufuncs on a rate (e.g. `np.exp(rate)`) raise the same `TypeError`, apart from the unit-independent ones (`np.isnan`, `np.isinf`, `np.isfinite`, `np.sign`, `np.signbit`). `float()` on an `ss.date` still works and is unchanged. Durations remain plottable — matplotlib converts them via `ss.DateConverter` rather than through `float()`.
+
+**Migration (v3.6.0):**
+
+| Old | New |
+|-----|-----|
+| `float(timepar)` | `.value`, `.years`, or `.to_dt()` — pick the one you meant |
+| `TimePar.to_numpy()` | `.to_array()` (unchanged; `to_numpy()` was removed because it defeated matplotlib's converter) |
+| `Module.link_rates()` | `Module.link_timepars()` (it links durations as well as rates) |
+
+Any code that `float()` broke was already computing the wrong number, so check the result rather than just silencing the error.
+
+### Converting rates between units with `to()`
+
+`ss.Rate.to()` accepts a duration unit as well as a rate class, matching `dur.to('month')`:
+
+```python
+ss.peryear(1).to('month')        # permonth(0.0833)
+ss.peryear(1).to(ss.permonth)    # Same thing
+ss.probperyear(0.5).to('month')  # probpermonth(0.0561)
+```
+
+**Regression (v3.6.0):** converting an `ss.prob` between units now goes via the underlying rate, so it agrees with `.to_prob()`. Previously the value was rescaled linearly — right for `ss.per` and `ss.freq`, but wrong for a probability: `ss.probperyear(0.5).to(ss.probpermonth)` gave `0.0417` rather than the correct `0.0561`, and scaling upwards raised `ValueError: Probabilities must be in [0, 1]` instead of saturating towards 1. This applies to `.to()`, to direct cross-unit construction (`ss.probpermonth(ss.probperyear(0.5))`), and to conversions between an `ss.prob` and an `ss.per` or `ss.freq`. Models that converted probabilities this way were understating event rates; those that used `.to_prob()` are unaffected.
+
 ### Probability multiplication is not arithmetic
 
 Probabilities are always constrained to [0, 1], so multiplication does not behave like normal arithmetic:
@@ -358,6 +405,21 @@ p = (death_rate * rel_age * rel_ses).to_prob()
 
 The same rule applies when combining rates from multiple sources in a disease model's `step_state()` or custom logic: accumulate all multiplicative factors on the rate, then call `.to_prob()` exactly once.
 
+### CRITICAL: `float()` on a timepar
+
+`float(ss.years(1))` raises a `TypeError` as of Starsim v3.6.0, because the unit was silently discarded: `ss.years(1)`, `ss.months(1)` and `ss.days(1)` all gave `1.0`, as did `ss.peryear(1)`, `ss.permonth(1)` and `ss.perday(1)`, despite differing by a factor of 365.
+
+```python
+# WRONG -- half-life expressed this way had no effect at all
+decay = np.log(2)/ss.years(12)
+
+# RIGHT -- resolve against the timestep, or say which unit you want
+decay = np.log(2)/ss.years(12).to_dt()
+decay = np.log(2)/ss.years(12).years
+```
+
+See [Durations and timesteps](#durations-and-timesteps-to_dt-and-never-float) above. `float()` on an `ss.date` is unaffected.
+
 ### `ss.years(0.5)` vs `ss.datedur(months=6)`
 
 These are not always equivalent. Float-based `ss.years(0.5)` maps to the fractional midpoint of a year (often Jul 2), while `ss.datedur(months=6)` adds exactly 6 calendar months (Jul 1). Use `ss.datedur` when you need exact calendar dates; use `ss.years` when working with fractional math in models.
@@ -412,6 +474,8 @@ Durations:
   ss.dur(n, 'unit')                      # Generic (returns specific subclass)
   d.to('days')                           # Convert units
   d.days, d.weeks, d.months, d.years     # View in other units
+  d.value                                # Raw value in its own unit
+  d.to_dt()                              # Number of timesteps (module dt); NEVER float(d)
 
 Timeline:
   ss.Timeline(start, stop, dt)
@@ -433,6 +497,8 @@ Rates:
 Rate to probability:
   rate.to_prob()                         # Convert using module dt
   rate.to_events()                       # Convert to expected event count
+  rate.to_dt()                           # Per-timestep value
+  rate.to('month') / rate.to(ss.permonth)  # Convert to another unit
   (rate * rel_factor1 * rel_factor2).to_prob()  # ALWAYS multiply first
 
 Plotting:
