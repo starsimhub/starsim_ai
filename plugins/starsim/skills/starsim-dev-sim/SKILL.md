@@ -34,7 +34,7 @@ sim = ss.Sim(pars, interventions=my_intervention)
 
 | Class | Purpose | Key parameters |
 |-------|---------|----------------|
-| `ss.Sim` | Run simulation, manage modules | `diseases`, `networks`, `demographics`, `interventions`, `start`, `stop`, `n_agents`, `verbose` |
+| `ss.Sim` | Run simulation, manage modules | `diseases`, `networks`, `demographics`, `interventions`, `start`, `stop`, `n_agents`, `verbose`, `people_results` |
 | `ss.People` | Store agent states and arrays | `n_agents`, `age_data`, `extra_states` |
 | `ss.BoolState` | Boolean per-agent state | `name`, `default` |
 | `ss.FloatArr` | Numeric per-agent array | `name`, `default`, `label` |
@@ -138,6 +138,16 @@ for beta in [0.01, 0.05]:
     s = base_sim.copy()
     s.label = f'beta={beta}'
 ```
+
+### `n_alive` vs `len(people)`
+
+Use `sim.people.n_alive` (or the `results.n_alive` time series) for the number of living agents. `len(sim.people)` counts the agents in `auids`, which still includes agents who died on the current timestep — they are not removed until `people.finish_step()`, so that analyzers can inspect them. Using `len(people)` as a per-timestep denominator therefore inflates it by that timestep's deaths.
+
+This was a real bug in Starsim itself before v3.6.0: `prevalence` was computed as `n_infected/len(sim.people)`, which understated it by exactly the number of deaths that timestep (3.5% relative in an SIR run with `p_death=0.2`). It now uses `n_alive`, so `prevalence == n_infected/n_alive` exactly. **Any `prevalence` value from a pre-v3.6.0 Starsim is understated for a model with mortality.** The same release also made `results.cum_deaths` a true running cumulative sum; previously it recalculated the total each timestep, giving an off-by-one-timestep error.
+
+### Skipping People results for speed
+
+`ss.Sim(..., people_results=False)` (v3.6.0) skips the automatic per-timestep People-level results, saving up to ~40% of runtime in a bare sim. Disease and module dynamics are unaffected, but some modules — demographics in particular — rely on `results.n_alive`, so this only works for some sims. See `starsim-dev-profiling`.
 
 ### Verbose control
 
@@ -595,7 +605,8 @@ sim.loop.plot()     # Visual timeline of all module steps
 # --- People inspection ---
 sim.people.to_df()           # All agent data as DataFrame
 sim.people.person(0)         # Single agent's full attribute set
-len(sim.people)              # Number of alive agents
+sim.people.n_alive           # Number of alive agents -- use this as a denominator
+len(sim.people)              # Agents in auids: includes those who died this timestep
 len(sim.people.uid.raw)      # Total agents ever created (alive + dead)
 sim.people.age.mean()        # Mean age (alive only, automatic)
 

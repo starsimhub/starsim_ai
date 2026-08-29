@@ -11,7 +11,7 @@ Demographics modules add births, deaths, pregnancy, and aging to a Starsim simul
 
 | Class | Purpose | Key parameters |
 |-------|---------|----------------|
-| `ss.Births` | Crude birth rate (per person) | `birth_rate` -- scalar via `ss.peryear()` or DataFrame with `Year`/`CBR` columns |
+| `ss.Births` | Crude birth rate (per person) | `birth_rate` -- scalar via `ss.peryear()` or DataFrame with `Time`/`CBR` columns (`Year` also accepted) |
 | `ss.Deaths` | Background mortality (separate from disease deaths) | `death_rate` -- scalar via `ss.peryear()` or DataFrame; `rate_units` (default `1/1000`, set to `1` if data are raw rates) |
 | `ss.Pregnancy` | Age-specific fertility with pregnancy modeling | `fertility_rate`, `rel_fertility`, `min_age`, `max_age`, `p_maternal_death`, `dur_breastfeed` |
 | `ss.People` | Agent population | `n_agents`, `age_data` (DataFrame with `age`/`value` columns) |
@@ -58,7 +58,7 @@ sim.plot()
 
 ### 3. Time-varying birth rates from a DataFrame
 
-Supply a DataFrame with `Year` and `CBR` (crude birth rate) columns. Starsim interpolates between years.
+Supply a DataFrame with `Time` and `CBR` (crude birth rate) columns. Starsim interpolates between years. As of v3.6.0 `ss.Births` accepts a `Time` column, matching `ss.Deaths` and `ss.Pregnancy`; the older `Year` label still works.
 
 ```python
 import pandas as pd
@@ -79,6 +79,8 @@ sim.run()
 ### 4. Age-specific fertility with `ss.Pregnancy`
 
 For detailed modeling use `ss.Pregnancy` instead of `ss.Births`. It models age-specific fertility rates, pregnancy duration, maternal mortality, and mother-to-child transmission pathways. The `fertility_rate` parameter accepts a DataFrame with `Time`, `AgeGrp`, and `ASFR` columns.
+
+**Reproducibility note (v3.5.0):** the default `slot_scale` for `ss.Pregnancy` was raised from 5 to 100. Newborns get a random CRN slot in `[n_agents, slot_scale·n_agents]`, and a wider range makes it less likely that two newborns share a slot and therefore make identical draws. The hash-based CRN introduced in the same release means a larger range no longer costs extra random draws. This changes stochastic realizations for any model with pregnancy, so stored regression baselines need regenerating.
 
 ```python
 import pandas as pd
@@ -336,7 +338,7 @@ sim = ss.Sim(demographics=[
 | Constant birth rate | `ss.Births(birth_rate=ss.peryear(20))` |
 | Constant death rate | `ss.Deaths(death_rate=ss.peryear(15))` |
 | Default demographics | `ss.Sim(demographics=True)` |
-| Time-varying births | `ss.Births(birth_rate=df)` where `df` has `Year`/`CBR` columns |
+| Time-varying births | `ss.Births(birth_rate=df)` where `df` has `Time`/`CBR` columns |
 | Age-specific fertility | `ss.Pregnancy(fertility_rate=df)` where `df` has `Time`/`AgeGrp`/`ASFR` columns |
 | Data-driven deaths | `ss.Deaths(death_rate=df, rate_units=1)` where `df` has `Time`/`Sex`/`AgeGrpStart`/`mx` columns |
 | Realistic age pyramid | `ss.People(n_agents=5000, age_data=df)` where `df` has `age`/`value` columns |

@@ -1,14 +1,6 @@
 # Starsim anti-patterns
 
-Canonical list of the non-obvious mistakes that even capable models repeatedly make in
-Starsim code. This file is the single source of truth for two surfaces:
-
-- The **routing table** in `SKILL.md` references these by name to dispatch to the right skill.
-- The **PostToolUse hook** (`hooks/check_antipatterns.py`) pattern-matches these in edited
-  Python and nudges Claude at the moment the mistake is introduced.
-
-If you add, remove, or reword a rule here, update the corresponding regex in
-`hooks/check_antipatterns.py` (each rule there is tagged with the same `id`).
+Canonical list of the non-obvious mistakes that even capable models repeatedly make in Starsim code. The **routing table** in `SKILL.md` references these by name to dispatch to the right skill. Check code you write against both tables below before declaring the work done.
 
 | id | Anti-pattern | Why it's wrong | Correct form | Skill |
 |----|--------------|----------------|--------------|-------|
@@ -19,13 +11,14 @@ If you add, remove, or reword a rule here, update the corresponding regex in
 | `where-uids` | Getting agents via `np.where(state)[0]` (or `state[:]`, `int(state)`) | Returns positions/booleans, not UIDs — silently wrong indexing | Use `state.uids` to get the UIDs of agents in a boolean state | [starsim-dev-indexing](../starsim-dev-indexing/SKILL.md) |
 | `hasattr-getattr` | Using `hasattr(...)` / `getattr(obj, 'x')` for introspection | Starsim prefers explicit type checks and dict-style access | Prefer `isinstance(...)`, and `people['x']` / `module['x']` over `getattr` | [starsim-style-python](../starsim-style-python/SKILL.md), [starsim-dev-indexing](../starsim-dev-indexing/SKILL.md) |
 
-## Other recurring mistakes (not auto-detectable)
+## Other recurring mistakes
 
-These are common mistakes but too context-dependent to flag mechanically — watch for them
-during review:
+These are just as common, but more context-dependent, so they need judgment rather than pattern-matching:
 
 - **Per-agent state declared as plain attributes** instead of `define_states([...])`. Plain
   attributes don't grow/shrink with the population or reset on death. (`starsim-dev-diseases`,
   `starsim-dev-interventions`)
 - **A transmissible disease with no network or mixing pool** — `ss.Infection` needs a contact
   structure or no epidemic occurs. (`starsim-dev-networks`)
+- **`len(sim.people)` used as a per-timestep denominator.** It counts the agents in `auids`, which still includes agents who died this timestep, so any rate computed from it is understated by that timestep's deaths. Use `sim.people.n_alive` (or `results.n_alive`). (`starsim-dev-sim`, `starsim-dev-indexing`)
+- **Scheduling later disease stages from the time of acquisition** in a model with a latent period, so the latent period eats into the infectious period rather than delaying it. Schedule from `ti_infectious`, and use `ss.SEIR` rather than hand-rolling one. (`starsim-dev-diseases`)

@@ -33,7 +33,9 @@ ss.Route
 ├── ss.Network
 │   ├── ss.StaticNet
 │   └── ss.DynamicNetwork
-│       ├── ss.RandomNet
+│       ├── ss.RandomExactNet
+│       │   └── ss.RandomNet
+│       ├── ss.RandomSafeNet
 │       └── ss.SexualNetwork
 │           ├── ss.MFNet
 │           └── ss.MSMNet
@@ -73,6 +75,19 @@ sim.plot()
 ```
 
 The `n_contacts` parameter accepts a scalar or a distribution. Using `ss.poisson(4)` gives each agent a Poisson-distributed number of contacts with mean 4.
+
+Since Starsim v3.5.0, `ss.RandomNet` is a fast, *approximate* network: the source side of each edge has exactly `n_contacts` stubs, but the target side is drawn with replacement, so the realized per-agent degree is more variable. It preserves the mixing structure of risk-stratified networks and is the right default. Choose a different class when you need a stronger guarantee:
+
+| Class | Use when |
+|-------|----------|
+| `ss.RandomNet` | Default. Fastest; degree is approximate. |
+| `ss.RandomExactNet` | You rely on the exact degree distribution (this is what `ss.RandomNet` did before v3.5.0). ~1.8x slower. |
+| `ss.RandomSafeNet` | You need CRN safety across scenarios — adding or removing one agent must not perturb everyone else's edges. Takes `n_edges` (≈ `n_contacts/2`, integer only) rather than `n_contacts`. |
+
+```python
+net = ss.RandomExactNet(n_contacts=ss.poisson(4))  # exact degree
+net = ss.RandomSafeNet(n_edges=2)                  # CRN-safe; n_contacts=4 equivalent
+```
 
 ### MFNet -- heterosexual partnerships for STI modeling
 
@@ -371,6 +386,8 @@ sim = ss.Sim(diseases=ss.SIR(), networks=ss.RandomNet())
 | Task | Code |
 |------|------|
 | Random network | `ss.RandomNet(n_contacts=ss.poisson(4))` |
+| Random network, exact degree | `ss.RandomExactNet(n_contacts=ss.poisson(4))` |
+| Random network, CRN-safe | `ss.RandomSafeNet(n_edges=2)` |
 | Heterosexual network | `ss.MFNet(duration=1/24, acts=80)` |
 | MSM network | `ss.MSMNet(duration=1/24, acts=80, participation=0.1)` |
 | Maternal network | `ss.MaternalNet()` (requires `ss.Pregnancy()`) |

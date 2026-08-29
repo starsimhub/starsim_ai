@@ -11,7 +11,7 @@
       "name": "starsim-ai",
       "source": "./plugins/starsim",
       "description": "Starsim and Sciris MCP tools and modeling skills",
-      "version": "1.4_2026.07.07",
+      "version": "1.5_2026.08.28",
       "keywords": ["starsim", "sciris", "disease-modeling", "epidemiology"]
     },
     {

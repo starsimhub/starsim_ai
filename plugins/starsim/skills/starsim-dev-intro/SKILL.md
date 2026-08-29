@@ -15,6 +15,7 @@ Starsim is a highly flexible agent-based modeling framework primarily designed f
 | `ss.People` | Stores per-agent states (age, sex, alive) as arrays; extended by modules with disease-specific states | `n_agents` |
 | `ss.SIR` | SIR (susceptible-infected-recovered) disease module | `beta`, `init_prev`, `dur_inf`, `p_death` |
 | `ss.SIS` | SIS (susceptible-infected-susceptible) disease module | `beta`, `init_prev`, `dur_inf` |
+| `ss.SEIR` | SEIR disease module; adds a latent, non-infectious period to `ss.SIR` | `beta`, `init_prev`, `dur_exp`, `dur_inf`, `p_death` |
 | `ss.RandomNet` | Random contact network where each agent has a configurable number of contacts per timestep | `n_contacts` |
 | `ss.Results` | Nested dictionary-like structure of time-series outputs from all modules | accessed via `sim.results` |
 
@@ -65,7 +66,7 @@ sim.plot()
 sim.diseases.sir.plot()
 ```
 
-The `pars` dictionary feeds directly into `ss.Sim()`. Under the hood, `type = 'random'` maps to `ss.RandomNet` and `type = 'sir'` maps to `ss.SIR`. Other recognized string types include `'sis'` for `ss.SIS`.
+The `pars` dictionary feeds directly into `ss.Sim()`. Under the hood, `type = 'random'` maps to `ss.RandomNet` and `type = 'sir'` maps to `ss.SIR`. Other recognized string types include `'sis'` for `ss.SIS` and `'seir'` for `ss.SEIR`.
 
 ### Pattern 2: Component-based (more control, recommended)
 

@@ -3,7 +3,7 @@
 Portable guidance for AI coding agents (Codex, Cursor, OpenCode, and other harnesses
 that read `AGENTS.md`) working on [Starsim](https://github.com/starsimhub/starsim)
 agent-based disease models. Claude Code users get this and much more automatically via
-the `starsim-ai` plugin's skills and hooks — this file is the standalone export for
+the `starsim-ai` plugin's skills — this file is the standalone export for
 everything else. Drop it into the root of a Starsim project to make it active.
 
 > Canonical source for the anti-patterns below: `skills/starsim-dev/starsim-antipatterns.md`.
